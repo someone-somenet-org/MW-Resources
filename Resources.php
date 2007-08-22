@@ -16,7 +16,7 @@ switch ( $wgLanguageCode ) {
                 $wgSpecialPages[ 'Resources' ] = 'Resources';
                 break;
         case 'de':
-                $wgSpecialPages[ 'Materialien' ] = 'Materialien';
+                $wgSpecialPages[ 'Resources' ] = 'Resources';
                 break;
         default:
                 $wgSpecialPages[ 'Resources' ] = 'Resources';
