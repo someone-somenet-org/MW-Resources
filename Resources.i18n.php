@@ -12,6 +12,11 @@ $allMessages = array(
 	'de' => array(
 		'resources_title' => 'Materialien',
 		'resources' => 'Materialien',
+		'no_page_specified' => 'Fehler: Kein Artikel angegeben.',
+		'header' => '= Materialien für $1 =',
+		'header_text' => 'Es gibt derzeit $1 Materialien für diese Seite. Du kannst auch einen [[Spezial:Materialien hinzufügen|neuen hinzufügen]]!',
+		'header_text_none' => 'Es gibt derzeit noch \'\'\'keine Materialien\'\'\' für diese Seite. Du kannst aber [[Spezial:Materialien hinzufügen|neue Materialien hinzufügen]].',
+		'redirect_link_view' => 'edit',
 	)
 );
 ?>
