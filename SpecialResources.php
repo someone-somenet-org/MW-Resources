@@ -37,8 +37,10 @@ class Resources extends SpecialPage
 		/* make a Title object from $par */
 		if ( $par )
 			$title = Title::newFromText( $par );
-		else
+		else {
 			$wgOut->addWikiText( wfMsg('no_page_specified') );
+			return;
+		}
 
 		/* add the list of pages linking here, if desired */
 		if ( $resources_showPages or $resources_showPages == NULL ) 
