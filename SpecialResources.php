@@ -1,7 +1,5 @@
 <?php
 
-$wgSpecialPages[ 'Resources' ] = 'Resources';
-
 /**
  * Entry point
  */
