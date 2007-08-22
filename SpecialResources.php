@@ -248,6 +248,8 @@ class Resources extends SpecialPage
 		$r .= wfMsg( 'header', $titleText ) . "\n";
 		if ( $count > 0 ) {
 			$r .= wfMsg( 'header_text', $count, $titleText );
+		} elseif ( $count == 1 ) {
+			$r .= wfMsg( 'header_text_one', $count, $titleText );
 		} else {
 			$r .= wfMsg( 'header_text_none', $titleText );
 		}
