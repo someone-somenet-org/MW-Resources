@@ -17,9 +17,9 @@ Error: No pagename was specified',
 		'no_page_specified' => '= Spezial:Materialien =
 Fehler: Kein Artikel angegeben.',
 		'header' => '= Materialien für $1 =',
-		'header_text' => 'Es gibt derzeit $1 Materialien für diese Seite. Du kannst auch [[Spezial:Materialien hinzufügen|neue hinzufügen]]!',
-		'header_text_none' => 'Es gibt derzeit noch \'\'\'keine Materialien\'\'\' für diese Seite. Du kannst aber [[Spezial:Materialien hinzufügen|neue Materialien hinzufügen]].',
-		'header_text_one' => 'Es gibt Materialien für diese Seite. Du kannst auch [[Spezial:Materialien hinzufügen|neue hinzufügen]]!',
+		'header_text' => 'Es gibt derzeit $1 Materialien für diese Seite. Du kannst auch [[Spezial:Materialien Hinzufügen/$1|neue hinzufügen]]!',
+		'header_text_none' => 'Es gibt derzeit noch \'\'\'keine Materialien\'\'\' für diese Seite. Du kannst aber [[Spezial:Materialien Hinzufügen/$1|neue Materialien hinzufügen]].',
+		'header_text_one' => 'Es gibt Materialien für diese Seite. Du kannst auch [[Spezial:Materialien Hinzufügen/$1|neue hinzufügen]]!',
 		'redirect_link_view' => 'edit',
 	)
 );
