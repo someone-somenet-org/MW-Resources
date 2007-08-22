@@ -246,7 +246,7 @@ class Resources extends SpecialPage
 		$titleText = $title->getFullText();
 		$r = "<div id=\"mw-pages\">\n";
 		$r .= wfMsg( 'header', $titleText ) . "\n";
-		if ( $count > 0 ) {
+		if ( $count > 1 ) {
 			$r .= wfMsg( 'header_text', $count, $titleText );
 		} elseif ( $count == 1 ) {
 			$r .= wfMsg( 'header_text_one', $count, $titleText );
