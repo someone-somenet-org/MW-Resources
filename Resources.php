@@ -8,18 +8,18 @@ EOT;
         exit( 1 );
 }
 
-$wgAutoloadClasses['Downloads'] = dirname(__FILE__) . '/SpecialDownloads.php';
-$wgHooks['LoadAllMessages'][] = 'Downloads::loadMessages';
+$wgAutoloadClasses['Resources'] = dirname(__FILE__) . '/SpecialDownloads.php';
+$wgHooks['LoadAllMessages'][] = 'Resources::loadMessages';
 
 switch ( $wgLanguageCode ) {
         case 'en':
-                $wgSpecialPages[ 'Downloads' ] = 'Downloads';
+                $wgSpecialPages[ 'Resources' ] = 'Downloads';
                 break;
         case 'de':
-                $wgSpecialPages[ 'Downloads' ] = 'Downloads';
+                $wgSpecialPages[ 'Materialien' ] = 'Materialien';
                 break;
         default:
-                $wgSpecialPages[ 'Downloads' ] = 'Downloads';
+                $wgSpecialPages[ 'Resources' ] = 'Downloads';
                 break;
 }
 

@@ -1,8 +1,8 @@
 <?php
 $allMessages = array(
         'en' => array(
-		'downloads_title' => 'Downloads',
-		'downloads' => 'Downloads',
+		'resources_title' => 'Downloads',
+		'resources' => 'Downloads',
 		'no_page_specified' => 'Error: No pagename was specified',
 		'header' => '= Resources for $1 =',
 		'header_text' => 'There are currently $1 resources for this page. You may want to [[Special:AddResource/$2|add a new one]]?',
@@ -10,8 +10,8 @@ $allMessages = array(
 		'redirect_link_view' => 'edit link',
 	),
 	'de' => array(
-		'downloads_title' => 'Downloads',
-		'downloads' => 'Downloads',
+		'resources_title' => 'Downloads',
+		'resources' => 'Downloads',
 	)
 );
 ?>

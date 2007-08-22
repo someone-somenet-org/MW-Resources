@@ -1,26 +1,26 @@
 <?php
 
-$wgSpecialPages[ 'Downloads' ] = 'Downloads';
+$wgSpecialPages[ 'Resources' ] = 'Resources';
 
 /**
  * Entry point
  */
-function wfSpecialDownloads ($par) {
+function wfSpecialResources ($par) {
 	global $wgOut;
-	$page = new Downloads();
+	$page = new Resources();
 	$page->execute($par);
 }
 
-class Downloads extends SpecialPage
+class Resources extends SpecialPage
 {
-	function Downloads() {
+	function Resources() {
 		global $wgOut;
 		self::loadMessages();
 
 		// the output of similarnamedarticles_title will be what
 		// the link points to. the lowercase version will be used
 		// as displayed link-text
-		SpecialPage::SpecialPage( wfMsg('downloads_title') ); // this is where the link points to
+		SpecialPage::SpecialPage( wfMsg('resources_title') ); // this is where the link points to
 
 	}
 	
@@ -115,7 +115,7 @@ class Downloads extends SpecialPage
 		$rows = array_values( $rows );
 		$numRows = count( $rows );
 
-		global $downloads_Namespaces, $wgContLang;
+		global $resources_Namespaces, $wgContLang;
 		foreach ( $rows as $row ) {
 			if ( $row->page_namespace != 6 ) 
 				continue;
@@ -150,7 +150,7 @@ class Downloads extends SpecialPage
 		global $resources_SubpagesIncludeRedirects;
 		$result = array ();
 		$prefix = $title->getPrefixedURL() . "/";
-		$fname = 'Downloads::getSubpages';
+		$fname = 'Resources::getSubpages';
 
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
 		list( $namespace, $prefixKey, $prefix ) = $prefixList;
@@ -190,7 +190,7 @@ class Downloads extends SpecialPage
 		require_once("$IP/extensions/ExternalRedirects/ExternalRedirects.php");
 
 		$prefix = $title->getPrefixedURL() . "/";
-		$fname = 'Downloads::getLinks';
+		$fname = 'Resources::getLinks';
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
 		list( $namespace, $prefixKey, $prefix ) = $prefixList;
 
@@ -293,7 +293,7 @@ class Downloads extends SpecialPage
 		if ( $messagesLoaded ) return;
 		$messagesLoaded = true;
 
-		require( dirname( __FILE__ ) . '/Downloads.i18n.php' );
+		require( dirname( __FILE__ ) . '/Resources.i18n.php' );
 		foreach ( $allMessages as $lang => $langMessages ) {
 			$wgMessageCache->addMessages( $langMessages, $lang );
 		}
