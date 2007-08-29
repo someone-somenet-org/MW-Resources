@@ -242,6 +242,7 @@ class Resources extends SpecialPage
 	/* create a category list of the three former functions */
 	function makeList( $list ) {
 		global $wgTitle, $wgContLang, $wgCanonicalNamespaceNames;
+		global $resources_enableDirectFileLinks;
 		$catPage = new CategoryViewer( $wgTitle );
 		$skin = $catPage->getSkin();
 		ksort( $list );
@@ -255,7 +256,7 @@ class Resources extends SpecialPage
 					$value[1], $value[2][0]
 				) . ' (' . $skin->makeKnownLink( $value[2][1]->getPrefixedText(),
 					wfMsg('redirect_link_view'), 'redirect=no') . ')';
-			} elseif ( $value[0] == NS_IMAGE ) {
+			} elseif ( $value[0] == NS_IMAGE and $resources_enableDirectFileLinks) {
 				$fileTitle = Title::makeTitle( $value[0], $value[1] );
 				$fileArticle = new Image( $fileTitle ); /* create article obj */
 				$catPage->articles[] = '<span class="plainlinks">' . 
