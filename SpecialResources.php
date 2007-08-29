@@ -123,24 +123,6 @@ class Resources extends SpecialPage
 			$sortkey = $row->page_title . ":" . $row->page_namespace;
 
 			$result[$sortkey] = array ($row->page_namespace, $row->page_title, $row->page_title);
-
-#			$nt = Title::makeTitle( $row->page_namespace, $row->page_title );
-#				
-#			if ( $row->page_is_redirect ) {
-#				$extra = 'redirect=no';
-#			} else {
-#				$extra = '';
-#			}
-#
-#			// Display properties (redirect or template)
-#			$props = array();
-#			if ( $row->page_is_redirect ) {
-#				$props[] = $isredir;
-#			}
-#	
-#			if ( $row->is_template ) {
-#				$props[] = $istemplate;
-#			}
 		}
 		return $result;
 	}
@@ -259,7 +241,7 @@ class Resources extends SpecialPage
 
 	/* create a category list of the three former functions */
 	function makeList( $list ) {
-		global $wgTitle, $wgContLang;
+		global $wgTitle, $wgContLang, $wgCanonicalNamespaceNames;
 		$catPage = new CategoryViewer( $wgTitle );
 		$skin = $catPage->getSkin();
 		ksort( $list );
@@ -273,6 +255,12 @@ class Resources extends SpecialPage
 					$value[1], $value[2][0]
 				) . ' (' . $skin->makeKnownLink( $value[2][1]->getPrefixedText(),
 					wfMsg('redirect_link_view'), 'redirect=no') . ')';
+			} elseif ( $value[0] == NS_IMAGE ) {
+				$fileTitle = Title::makeTitle( $value[0], $value[1] );
+				$fileArticle = new Image( $fileTitle ); /* create article obj */
+				$catPage->articles[] = '<span class="plainlinks">' . 
+					$skin->makeExternalLink( $fileArticle->getURL(),
+					$value[1]) . '</span>';
 			} else {
 				$title = Title::makeTitle( $value[0], $value[1] );
 				$catPage->articles[] = $skin->makeSizeLinkObj(
