@@ -29,7 +29,7 @@ class Resources extends SpecialPage
 		global $wgEnableExternalRedirects;
 		$resourceList = array();
 		$this->setHeaders();
-		
+
 		/* make backlink variable */
 		$script = "<script type=\"text/javascript\">/*<![CDATA[*/\nvar downloadPage = \"$par\";\n/*]]>*/</script>\n";
 		$wgOut->addScript( $script );
@@ -131,7 +131,7 @@ class Resources extends SpecialPage
 	function getSubpages( $title ) {
 		global $resources_SubpagesIncludeRedirects;
 		$result = array ();
-		$prefix = $title->getPrefixedURL() . "/";
+		$prefix = $title->getPrefixedDBkey() . "/";
 		$fname = 'Resources::getSubpages';
 
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
@@ -171,7 +171,7 @@ class Resources extends SpecialPage
 		global $IP;
 		require_once("$IP/extensions/ExternalRedirects/ExternalRedirects.php");
 
-		$prefix = $title->getPrefixedURL() . "/";
+		$prefix = $title->getPrefixedDBkey() . "/";
 		$fname = 'Resources::getLinks';
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
 		list( $namespace, $prefixKey, $prefix ) = $prefixList;
