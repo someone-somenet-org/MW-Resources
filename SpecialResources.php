@@ -9,17 +9,22 @@ function wfSpecialResources ($par) {
 	$page->execute($par);
 }
 
-class Resources extends SpecialPage
-{
+/**
+ * The class implementing Special:Resources (a.k.a. Spezial:Materialien).
+ */
+class Resources extends SpecialPage {
+
+	/**
+	 * ctor, only calls i18n-routine and creates special page
+	 */
 	function Resources() {
-		global $wgOut;
 		self::loadMessages();
 
-		// the output of similarnamedarticles_title will be what
-		// the link points to. the lowercase version will be used
-		// as displayed link-text
+		/* this is somewhat... well. The _target_ of the link will be the
+		 * output of wfMsg('resources_title'), and the lower-case version
+		 * of the output of wfMsg('resources_title') will be again wfMsg'ed
+		 * to get the _text_ of the link. */
 		SpecialPage::SpecialPage( wfMsg('resources_title') ); // this is where the link points to
-
 	}
 	
 	function execute ( $par ) {
@@ -30,7 +35,7 @@ class Resources extends SpecialPage
 		$resourceList = array();
 		$this->setHeaders();
 
-		/* make backlink variable */
+		/* make backlink variable for script in MediaWiki:Common.js */
 		$script = "<script type=\"text/javascript\">/*<![CDATA[*/\nvar downloadPage = \"$par\";\n/*]]>*/</script>\n";
 		$wgOut->addScript( $script );
 
@@ -48,7 +53,7 @@ class Resources extends SpecialPage
 		/* add the list of subpages, if desired */
 		if ( $resources_showSubpages or $resources_showSubpages == NULL )
 			$resourceList = array_merge( $resourceList, $this->getSubpages( $title ) );
-		/* add a list of foreign links */
+		/* add a list of foreign links (requires ExternalRedirects extension) */
 		if ( $wgEnableExternalRedirects and
 			( $resources_showLinks or $resources_showLinks == NULL ) )
 			$resourceList = array_merge( $resourceList, $this->getLinks( $title ) );
@@ -127,11 +132,16 @@ class Resources extends SpecialPage
 		return $result;
 	}
 
-	/* get subpages of $title */
+	/**
+	 * get a list of Subpages of $title
+	 * @param Title $title - function will find subpages of $title
+	 * @return array with the structure:
+	 *		[0] => array( $sortkey => ($type, $link, $linktext) )
+	 */
 	function getSubpages( $title ) {
 		global $resources_SubpagesIncludeRedirects;
 		$result = array ();
-		$prefix = $title->getPrefixedDBkey() . "/";
+		$prefix = $title->getPrefixedDBkey() . '/';
 		$fname = 'Resources::getSubpages';
 
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
@@ -166,7 +176,13 @@ class Resources extends SpecialPage
 		return $result;
 	}
 
-	/* get foreign links for $title */
+	/**
+	 * get a list of ExternalRedirects of $title
+	 * @param Title $title - function will find subpages of $title that are
+	 * 		external Redirects
+	 * @return array with the structure:
+	 *		[0] => array( $sortkey => ($type, $link, $linktext) )
+	 */
 	function getLinks( $title ) {
 		global $IP;
 		require_once("$IP/extensions/ExternalRedirects/ExternalRedirects.php");
@@ -196,7 +212,7 @@ class Resources extends SpecialPage
 		while ( $row = $dbr->fetchObject( $res ) ) {
 			/* WARNING: retrieving the content of pages we find here is somewhat
 			   complicated. It has to emulate some functions of Article.php. We
-			   cannot to a $article->fetchContent, because this triggers some
+			   cannot simpy do a $article->fetchContent, because this triggers some
 			   hooks, especially the one we use for external redirection!
 			   We don't do all that fancy error checking that Article.php does 
 			   (yet). */
@@ -221,7 +237,15 @@ class Resources extends SpecialPage
 		return $result;
 	}
 
-	/* print the header */
+	/**
+	 * constructs the header printed above the actual list of found 
+	 * resources. This includes the <h1> as well as the "There are
+	 * currently..."
+	 * @param Title $title - We are printing a resources page for $title
+	 * @param int $count - How many results we have
+	 * @return string - apart from the div-tags (which are not interpreted
+	 * 		by the parser, this is Wiki-Syntax!
+	 */
 	function printHeader( $title, $count ) {
 		global $wgUser;
 		$skin = $wgUser->getSkin();
@@ -239,7 +263,15 @@ class Resources extends SpecialPage
 		return $r;	
 	}
 
-	/* create a category list of the three former functions */
+	/**
+	 * creates a category-style list of all the resources we found. This
+	 * function includes special treatment for ExternalRedirects as well
+	 * as for files, which can be directly linked by setting
+	 * 		$resources_enableDirectFileLinks
+	 * @param array $list - the array we constructed in getFiles(),
+	 * 		getSubpages() and getLinks().
+	 * @return string - a HTML-representation of the array.
+	 */
 	function makeList( $list ) {
 		global $wgTitle, $wgContLang, $wgCanonicalNamespaceNames;
 		global $resources_enableDirectFileLinks;
@@ -277,7 +309,9 @@ class Resources extends SpecialPage
 		return $result;
 	}
 
-	/* internationalization stuff */
+	/**
+	 * internationalization stuff
+	 */
 	function loadMessages() {
 		static $messagesLoaded = false;
 		global $wgMessageCache;
