@@ -71,6 +71,8 @@ class Resources extends SpecialPage {
 	function getFiles( $target ) {
 		$dbr =& wfGetDB( DB_READ );
 		$prefix = $target->getPrefixedText() . ' - ';
+		/* copied from SpecialUpload::processUpload(): */
+                $prefix = preg_replace ( "/[^".Title::legalChars()."]|:/", '-', $prefix );
 		$result = array ();
 
 		// Make the query
@@ -296,7 +298,7 @@ class Resources extends SpecialPage {
 				$fileArticle = new Image( $fileTitle ); /* create article obj */
 				$catPage->articles[] = '<span class="plainlinks">' . 
 					$skin->makeExternalLink( $fileArticle->getURL(),
-					$value[1]) . '</span>';
+					$value[2]) . '</span>';
 			} else {
 				$title = Title::makeTitle( $value[0], $value[1] );
 				$catPage->articles[] = $skin->makeSizeLinkObj(
