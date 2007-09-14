@@ -72,7 +72,7 @@ class Resources extends SpecialPage {
 		$dbr =& wfGetDB( DB_READ );
 		$prefix = $target->getPrefixedText() . ' - ';
 		/* copied from SpecialUpload::processUpload(): */
-                $prefix = preg_replace ( "/[^".Title::legalChars()."]|:/", '-', $prefix );
+                $prefix = preg_replace ( "/[^" . Title::legalChars() . "]|:/", '-', $prefix );
 		$result = array ();
 
 		// Make the query
@@ -320,7 +320,8 @@ class Resources extends SpecialPage {
 	function loadMessages() {
 		static $messagesLoaded = false;
 		global $wgMessageCache;
-		if ( $messagesLoaded ) return;
+		if ( $messagesLoaded )
+			return true;
 		$messagesLoaded = true;
 
 		require( dirname( __FILE__ ) . '/Resources.i18n.php' );
