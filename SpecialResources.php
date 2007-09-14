@@ -126,10 +126,9 @@ class Resources extends SpecialPage {
 			if ( $row->page_namespace != 6 ) 
 				continue;
 
-			$displayTitle = str_replace( '_', ' ', $row->page_title );
-			$displayTitle = str_replace( $prefix, '', $displayTitle );
+			$tmp = str_replace( '_', ' ', $row->page_title );
+			$displayTitle = str_replace( $prefix, '', $tmp );
 			$sortkey = $displayTitle . ":" . $row->page_namespace;
-			$displayTitle = str_replace( '/', '-', $row->page_title );
 
 			$result[$sortkey] = array ($row->page_namespace, $row->page_title, $displayTitle);
 		}
