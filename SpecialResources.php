@@ -70,6 +70,7 @@ class Resources extends SpecialPage {
 	 */
 	function getFiles( $target ) {
 		$dbr =& wfGetDB( DB_READ );
+		$prefix = $target->getPrefixedText() . ' - ';
 		$result = array ();
 
 		// Make the query
@@ -125,9 +126,12 @@ class Resources extends SpecialPage {
 			if ( $row->page_namespace != 6 ) 
 				continue;
 
-			$sortkey = $row->page_title . ":" . $row->page_namespace;
+			$displayTitle = str_replace( '_', ' ', $row->page_title );
+			$displayTitle = str_replace( $prefix, '', $displayTitle );
+			$sortkey = $displayTitle . ":" . $row->page_namespace;
+			$displayTitle = str_replace( '/', '-', $row->page_title );
 
-			$result[$sortkey] = array ($row->page_namespace, $row->page_title, $row->page_title);
+			$result[$sortkey] = array ($row->page_namespace, $row->page_title, $displayTitle);
 		}
 		return $result;
 	}
