@@ -53,7 +53,7 @@ class Resources extends SpecialPage {
 			return;
 		}
 
-		$this->getResourceList( );
+		$this->getResourceList( $this->title );
 
 		$wgOut->addWikiText( $this->printHeader() );
 		$wgOut->addHTML( $this->makeList() );
@@ -62,7 +62,7 @@ class Resources extends SpecialPage {
 	/** 
 	 * this populates the global $resourceList
 	 */
-	function getResourceList() {
+	function getResourceList( $title ) {
 		global $resources_showPages, $resources_showSubpages, $resources_showLinks;
 		// variables from foreign extensions:
 		global $wgEnableExternalRedirects;
@@ -70,14 +70,14 @@ class Resources extends SpecialPage {
 
 		/* add the list of pages linking here, if desired */
 		if ( $resources_showPages or $resources_showPages == NULL ) 
-			$this->resourceList = array_merge( $this->resourceList, $this->getFiles() );
+			$this->resourceList = array_merge( $this->resourceList, $this->getFiles( $title ) );
 		/* add the list of subpages, if desired */
 		if ( $resources_showSubpages or $resources_showSubpages == NULL )
-			$this->resourceList = array_merge( $this->resourceList, $this->getSubpages() );
+			$this->resourceList = array_merge( $this->resourceList, $this->getSubpages( $title ) );
 		/* add a list of foreign links (requires ExternalRedirects extension) */
 		if ( $wgEnableExternalRedirects and
 			( $resources_showLinks or $resources_showLinks == NULL ) )
-			$this->resourceList = array_merge( $this->resourceList, $this->getLinks() );
+			$this->resourceList = array_merge( $this->resourceList, $this->getLinks( $title ) );
 	}
 
 	/**
@@ -85,10 +85,9 @@ class Resources extends SpecialPage {
 	 * @return array with the structure:
 	 *		[0] => array( $sortkey => ($type, $link, $linktext) )
 	 */
-	function getFiles() {
-
+	function getFiles( $title ) {
 		$dbr =& wfGetDB( DB_READ );
-		$prefix = $this->title->getPrefixedText() . ' - ';
+		$prefix = $title->getPrefixedText() . ' - ';
 		/* copied from SpecialUpload::processUpload(): */
                 $prefix = preg_replace ( "/[^" . Title::legalChars() . "]|:/", '-', $prefix );
 		$result = array ();
@@ -96,14 +95,14 @@ class Resources extends SpecialPage {
 		// Make the query
 		$plConds = array(
 				'page_id=pl_from',
-				'pl_namespace' => $this->title->getNamespace(),
-				'pl_title' => $this->title->getDBkey(),
+				'pl_namespace' => $title->getNamespace(),
+				'pl_title' => $title->getDBkey(),
 				);
 
 		$tlConds = array(
 				'page_id=tl_from',
-				'tl_namespace' => $this->title->getNamespace(),
-				'tl_title' => $this->title->getDBkey(),
+				'tl_namespace' => $title->getNamespace(),
+				'tl_title' => $title->getDBkey(),
 				);
 
 		// Read an extra row as an at-end check
@@ -160,10 +159,10 @@ class Resources extends SpecialPage {
 	 * @return array with the structure:
 	 *		[0] => array( $sortkey => ($type, $link, $linktext) )
 	 */
-	function getSubpages( ) {
+	function getSubpages( $title ) {
 		global $resources_SubpagesIncludeRedirects;
 		$result = array ();
-		$prefix = $this->title->getPrefixedDBkey() . '/';
+		$prefix = $title->getPrefixedDBkey() . '/';
 		$fname = 'Resources::getSubpages';
 
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
@@ -203,11 +202,11 @@ class Resources extends SpecialPage {
 	 * @return array with the structure:
 	 *		[0] => array( $sortkey => ($type, $link, $linktext) )
 	 */
-	function getLinks() {
+	function getLinks( $title ) {
 		global $IP;
 		require_once("$IP/extensions/ExternalRedirects/ExternalRedirects.php");
 
-		$prefix = $this->title->getPrefixedDBkey() . "/";
+		$prefix = $title->getPrefixedDBkey() . "/";
 		$fname = 'Resources::getLinks';
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
 		list( $namespace, $prefixKey, $prefix ) = $prefixList;
