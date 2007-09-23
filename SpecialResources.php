@@ -53,7 +53,7 @@ class Resources extends SpecialPage {
 			return;
 		}
 
-		$this->getResourceList( $this->title );
+		$this->getResourceList( );
 
 		$wgOut->addWikiText( $this->printHeader() );
 		$wgOut->addHTML( $this->makeList() );
@@ -62,7 +62,7 @@ class Resources extends SpecialPage {
 	/** 
 	 * this populates the global $resourceList
 	 */
-	function getResourceList( $title ) {
+	function getResourceList() {
 		global $resources_showPages, $resources_showSubpages, $resources_showLinks;
 		// variables from foreign extensions:
 		global $wgEnableExternalRedirects;
@@ -200,8 +200,6 @@ class Resources extends SpecialPage {
 
 	/**
 	 * get a list of ExternalRedirects of $title
-	 * @param Title $title - function will find subpages of $title that are
-	 * 		external Redirects
 	 * @return array with the structure:
 	 *		[0] => array( $sortkey => ($type, $link, $linktext) )
 	 */
