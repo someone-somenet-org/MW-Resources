@@ -14,6 +14,10 @@ function wfSpecialResources ($par) {
  */
 class Resources extends SpecialPage {
 
+	// global variables
+	var $resourcesList;
+	var $title;
+
 	/**
 	 * ctor, only calls i18n-routine and creates special page
 	 */
@@ -27,12 +31,14 @@ class Resources extends SpecialPage {
 		SpecialPage::SpecialPage( wfMsg('resources_title') ); // this is where the link points to
 	}
 	
+	/**
+	 * main worker-function...
+	 */
 	function execute ( $par ) {
 		global $wgOut, $wgRequest;
 		global $resources_showPages, $resources_showSubpages, $resources_showLinks;
-		/* some variables from foreign extensions: */
+		// variables from foreign extensions:
 		global $wgEnableExternalRedirects;
-		$resourceList = array();
 		$this->setHeaders();
 
 		/* make backlink variable for script in MediaWiki:Common.js */
@@ -41,36 +47,48 @@ class Resources extends SpecialPage {
 
 		/* make a Title object from $par */
 		if ( $par )
-			$title = Title::newFromText( $par );
+			$this->title = Title::newFromText( $par );
 		else {
 			$wgOut->addWikiText( wfMsg('no_page_specified') );
 			return;
 		}
 
+		$this->getResourceList( $this->title );
+
+		$wgOut->addWikiText( $this->printHeader() );
+		$wgOut->addHTML( $this->makeList() );
+	}
+
+	/** 
+	 * this populates the global $resourceList
+	 */
+	function getResourceList( $title ) {
+		global $resources_showPages, $resources_showSubpages, $resources_showLinks;
+		// variables from foreign extensions:
+		global $wgEnableExternalRedirects;
+		$this->resourceList = array();
+
 		/* add the list of pages linking here, if desired */
 		if ( $resources_showPages or $resources_showPages == NULL ) 
-			$resourceList = array_merge( $resourceList, $this->getFiles( $title ) );
+			$this->resourceList = array_merge( $this->resourceList, $this->getFiles() );
 		/* add the list of subpages, if desired */
 		if ( $resources_showSubpages or $resources_showSubpages == NULL )
-			$resourceList = array_merge( $resourceList, $this->getSubpages( $title ) );
+			$this->resourceList = array_merge( $this->resourceList, $this->getSubpages() );
 		/* add a list of foreign links (requires ExternalRedirects extension) */
 		if ( $wgEnableExternalRedirects and
 			( $resources_showLinks or $resources_showLinks == NULL ) )
-			$resourceList = array_merge( $resourceList, $this->getLinks( $title ) );
-
-		$wgOut->addWikiText( $this->printHeader( $title, count($resourceList) ) );
-		$wgOut->addHTML( $this->makeList( $resourceList ) );
+			$this->resourceList = array_merge( $this->resourceList, $this->getLinks() );
 	}
 
 	/**
-	 * get a list of pages linking to $target
-	 * @param Title $target - function will find pages linking to this title
+	 * get a list of pages linking to $title
 	 * @return array with the structure:
 	 *		[0] => array( $sortkey => ($type, $link, $linktext) )
 	 */
-	function getFiles( $target ) {
+	function getFiles() {
+
 		$dbr =& wfGetDB( DB_READ );
-		$prefix = $target->getPrefixedText() . ' - ';
+		$prefix = $this->title->getPrefixedText() . ' - ';
 		/* copied from SpecialUpload::processUpload(): */
                 $prefix = preg_replace ( "/[^" . Title::legalChars() . "]|:/", '-', $prefix );
 		$result = array ();
@@ -78,14 +96,14 @@ class Resources extends SpecialPage {
 		// Make the query
 		$plConds = array(
 				'page_id=pl_from',
-				'pl_namespace' => $target->getNamespace(),
-				'pl_title' => $target->getDBkey(),
+				'pl_namespace' => $this->title->getNamespace(),
+				'pl_title' => $this->title->getDBkey(),
 				);
 
 		$tlConds = array(
 				'page_id=tl_from',
-				'tl_namespace' => $target->getNamespace(),
-				'tl_title' => $target->getDBkey(),
+				'tl_namespace' => $this->title->getNamespace(),
+				'tl_title' => $this->title->getDBkey(),
 				);
 
 		// Read an extra row as an at-end check
@@ -139,14 +157,13 @@ class Resources extends SpecialPage {
 
 	/**
 	 * get a list of Subpages of $title
-	 * @param Title $title - function will find subpages of $title
 	 * @return array with the structure:
 	 *		[0] => array( $sortkey => ($type, $link, $linktext) )
 	 */
-	function getSubpages( $title ) {
+	function getSubpages( ) {
 		global $resources_SubpagesIncludeRedirects;
 		$result = array ();
-		$prefix = $title->getPrefixedDBkey() . '/';
+		$prefix = $this->title->getPrefixedDBkey() . '/';
 		$fname = 'Resources::getSubpages';
 
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
@@ -188,11 +205,11 @@ class Resources extends SpecialPage {
 	 * @return array with the structure:
 	 *		[0] => array( $sortkey => ($type, $link, $linktext) )
 	 */
-	function getLinks( $title ) {
+	function getLinks() {
 		global $IP;
 		require_once("$IP/extensions/ExternalRedirects/ExternalRedirects.php");
 
-		$prefix = $title->getPrefixedDBkey() . "/";
+		$prefix = $this->title->getPrefixedDBkey() . "/";
 		$fname = 'Resources::getLinks';
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
 		list( $namespace, $prefixKey, $prefix ) = $prefixList;
@@ -246,15 +263,14 @@ class Resources extends SpecialPage {
 	 * constructs the header printed above the actual list of found 
 	 * resources. This includes the <h1> as well as the "There are
 	 * currently..."
-	 * @param Title $title - We are printing a resources page for $title
-	 * @param int $count - How many results we have
 	 * @return string - apart from the div-tags (which are not interpreted
 	 * 		by the parser, this is Wiki-Syntax!
 	 */
-	function printHeader( $title, $count ) {
+	function printHeader() {
 		global $wgUser;
+		$count = count( $this->resourceList );
 		$skin = $wgUser->getSkin();
-		$titleText = $title->getFullText();
+		$titleText = $this->title->getFullText();
 		$r = "<div id=\"mw-pages\">\n";
 		$r .= wfMsg( 'header', $titleText ) . "\n";
 		if ( $count > 1 ) {
@@ -273,21 +289,19 @@ class Resources extends SpecialPage {
 	 * function includes special treatment for ExternalRedirects as well
 	 * as for files, which can be directly linked by setting
 	 * 		$resources_enableDirectFileLinks
-	 * @param array $list - the array we constructed in getFiles(),
-	 * 		getSubpages() and getLinks().
 	 * @return string - a HTML-representation of the array.
 	 */
-	function makeList( $list ) {
+	function makeList() {
 		global $wgTitle, $wgContLang, $wgCanonicalNamespaceNames;
 		global $resources_enableDirectFileLinks;
 		$catPage = new CategoryViewer( $wgTitle );
 		$skin = $catPage->getSkin();
-		ksort( $list );
+		ksort( $this->resourceList );
 		
 		// this emulates CategoryViewer::getHTML(): 
 		$catPage->clearCategoryState();
 		// populate:
-		foreach ( $list as $sortkey=>$value) {
+		foreach ( $this->resourceList as $sortkey=>$value) {
 			if ( $value[0] == 'http' ) {
 				$catPage->articles[] = $skin->makeExternalLink(
 					$value[1], $value[2][0]
