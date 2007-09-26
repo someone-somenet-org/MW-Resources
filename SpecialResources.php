@@ -53,7 +53,7 @@ class Resources extends SpecialPage {
 			return;
 		}
 
-		$this->getResourceList( $this->title );
+		$this->resourceList = $this->getResourceList( $this->title );
 
 		$wgOut->addWikiText( $this->printHeader() );
 		$wgOut->addHTML( $this->makeList() );
@@ -66,18 +66,19 @@ class Resources extends SpecialPage {
 		global $resources_showPages, $resources_showSubpages, $resources_showLinks;
 		// variables from foreign extensions:
 		global $wgEnableExternalRedirects;
-		$this->resourceList = array();
+		$resourceList = array();
 
 		/* add the list of pages linking here, if desired */
 		if ( $resources_showPages or $resources_showPages == NULL ) 
-			$this->resourceList = array_merge( $this->resourceList, $this->getFiles( $title ) );
+			$resourceList = array_merge( $resourceList, $this->getFiles( $title ) );
 		/* add the list of subpages, if desired */
 		if ( $resources_showSubpages or $resources_showSubpages == NULL )
-			$this->resourceList = array_merge( $this->resourceList, $this->getSubpages( $title ) );
+			$resourceList = array_merge( $resourceList, $this->getSubpages( $title ) );
 		/* add a list of foreign links (requires ExternalRedirects extension) */
 		if ( $wgEnableExternalRedirects and
 			( $resources_showLinks or $resources_showLinks == NULL ) )
-			$this->resourceList = array_merge( $this->resourceList, $this->getLinks( $title ) );
+			$resourceList = array_merge( $resourceList, $this->getLinks( $title ) );
+		return $resourceList;
 	}
 
 	/**
@@ -341,6 +342,26 @@ class Resources extends SpecialPage {
 		}
 		return true;
 	}
+
+	public function getResourceListCount( $title ) {
+		global $resources_showPages, $resources_showSubpages, $resources_showLinks;
+		// variables from foreign extensions:
+		global $wgEnableExternalRedirects;
+		$resourceList = array();
+
+		/* add the list of pages linking here, if desired */
+		if ( $resources_showPages or $resources_showPages == NULL ) 
+			$resourceList = array_merge( $resourceList, $this->getFiles( $title ) );
+		/* add the list of subpages, if desired */
+		if ( $resources_showSubpages or $resources_showSubpages == NULL )
+			$resourceList = array_merge( $resourceList, $this->getSubpages( $title ) );
+		/* add a list of foreign links (requires ExternalRedirects extension) */
+		if ( $wgEnableExternalRedirects and
+			( $resources_showLinks or $resources_showLinks == NULL ) )
+			$resourceList = array_merge( $resourceList, $this->getLinks( $title ) );
+		return count($resourceList);
+	}
+
 }
 
 ?>
