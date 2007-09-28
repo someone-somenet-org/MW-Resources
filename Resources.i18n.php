@@ -1,7 +1,6 @@
 <?php
 $allMessages = array(
         'en' => array(
-		'resources_title' => 'Resources',
 		'resources' => 'Resources',
 		'no_page_specified' => '= Special:Resources =
 Error: No pagename was specified',
@@ -12,9 +11,7 @@ Error: No pagename was specified',
 		'redirect_link_view' => 'edit link',
 	),
 	'de' => array(
-		'resources_title' => 'Materialien',
 		'resources' => 'Materialien',
-		'materialien' => 'Materialien',
 		'no_page_specified' => '= Spezial:Materialien =
 Fehler: Kein Artikel angegeben.',
 		'header' => '= Materialien für $1 =',

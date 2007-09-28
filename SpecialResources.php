@@ -23,12 +23,7 @@ class Resources extends SpecialPage {
 	 */
 	function Resources() {
 		self::loadMessages();
-
-		/* this is somewhat... well. The _target_ of the link will be the
-		 * output of wfMsg('resources_title'), and the lower-case version
-		 * of the output of wfMsg('resources_title') will be again wfMsg'ed
-		 * to get the _text_ of the link. */
-		SpecialPage::SpecialPage( wfMsg('resources_title') ); // this is where the link points to
+		SpecialPage::SpecialPage( 'resources') ); // this is where the link points to
 	}
 	
 	/**
