@@ -12,6 +12,7 @@ Error: No pagename was specified',
 	),
 	'de' => array(
 		'resources' => 'Materialien',
+		'materialien' => 'Materialien',
 		'no_page_specified' => '= Spezial:Materialien =
 Fehler: Kein Artikel angegeben.',
 		'header' => '= Materialien für $1 =',

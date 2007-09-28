@@ -23,7 +23,7 @@ class Resources extends SpecialPage {
 	 */
 	function Resources() {
 		self::loadMessages();
-		SpecialPage::SpecialPage( 'resources') ); // this is where the link points to
+		SpecialPage::SpecialPage( wfMsg('resources') ); // this is where the link points to
 	}
 	
 	/**
