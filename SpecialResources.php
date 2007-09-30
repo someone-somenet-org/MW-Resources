@@ -265,13 +265,14 @@ class Resources extends SpecialPage {
 		$skin = $wgUser->getSkin();
 		$titleText = $this->title->getFullText();
 		$r = "<div id=\"mw-pages\">\n";
+		$addResourceText = SpecialPage::getTitleFor( 'AddResource' );
 		$r .= wfMsg( 'header', $titleText ) . "\n";
 		if ( $count > 1 ) {
-			$r .= wfMsg( 'header_text', $count, $titleText );
+			$r .= wfMsg( 'header_text', $count, $addResourceText, $titleText );
 		} elseif ( $count == 1 ) {
-			$r .= wfMsg( 'header_text_one', $count, $titleText );
+			$r .= wfMsg( 'header_text_one', $count, $addResourceText, $titleText );
 		} else {
-			$r .= wfMsg( 'header_text_none', $titleText );
+			$r .= wfMsg( 'header_text_none', $titleText, $addResourceText );
 		}
 		$r .= "</div>";
 		return $r;	
