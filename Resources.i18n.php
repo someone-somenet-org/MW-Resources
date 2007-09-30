@@ -17,7 +17,7 @@ Error: No pagename was specified',
 Fehler: Kein Artikel angegeben.',
 		'header' => '= Materialien für $1 =',
 		'header_text' => 'Es gibt derzeit $1 Materialien für diese Seite. Du kannst auch [[$2/$3|neue hinzufügen]]!',
-		'header_text_none' => 'Es gibt derzeit noch \'\'\'keine Materialien\'\'\' für diese Seite. Du kannst aber [[$1/$2|neue Materialien hinzufügen]].',
+		'header_text_none' => 'Es gibt derzeit noch \'\'\'keine Materialien\'\'\' für diese Seite. Du kannst aber [[$2/$1|neue Materialien hinzufügen]].',
 		'header_text_one' => 'Es gibt Materialien für diese Seite. Du kannst auch [[$2/$3|neue hinzufügen]]!',
 		'redirect_link_view' => 'edit',
 	)
