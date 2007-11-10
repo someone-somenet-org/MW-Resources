@@ -35,10 +35,7 @@ class Resources extends SpecialPage {
 		// variables from foreign extensions:
 		global $wgEnableExternalRedirects;
 		$this->setHeaders();
-
-		/* make backlink variable for script in MediaWiki:Common.js */
-		$script = "<script type=\"text/javascript\">/*<![CDATA[*/\nvar downloadPage = \"$par\";\n/*]]>*/</script>\n";
-		$wgOut->addScript( $script );
+		$backlinkTitle;
 
 		/* make a Title object from $par */
 		if ( $par )
@@ -47,6 +44,20 @@ class Resources extends SpecialPage {
 			$wgOut->addWikiText( wfMsg('no_page_specified') );
 			return;
 		}
+
+		if ( $this->title->isSubpage() )
+			$backlinkTitle = Title::newFromText( $this->title->getBaseText() );
+		else
+			$backlinkTitle = $this->title;
+		$backlinkTalkTitle = $backlinkTitle->getTalkPage();
+		$backlinkTalk = $backlinkTalkTitle->getPrefixedText();
+
+		/* make backlink variable for script in MediaWiki:Common.js */
+		$script = "<script type=\"text/javascript\">/*<![CDATA[*/
+var downloadPage = \"" . $backlinkTitle->getBaseText() . "\";
+var downloadTalkPage = \"" . $backlinkTalk . "\";
+/*]]>*/</script>\n";
+		$wgOut->addScript( $script );
 
 		$this->resourceList = $this->getResourceList( $this->title );
 
