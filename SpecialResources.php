@@ -48,11 +48,18 @@ class Resources extends SpecialPage {
 		$backlinkTitle = $this->title;
 		$backlinkTalkTitle = $backlinkTitle->getTalkPage();
 		$backlinkTalk = $backlinkTalkTitle->getPrefixedText();
+		if ( $backlinkTitle->getNsText() == "" ) {
+			$nsTabText = wfMsg('nstab-main');
+		} else {
+			$nsTabText = $backlinkTitle->getNsText();
+		}
 
 		/* make backlink variable for script in MediaWiki:Common.js */
 		$script = "<script type=\"text/javascript\">/*<![CDATA[*/
 var downloadPage = \"" . $backlinkTitle->getPrefixedText() . "\";
 var downloadTalkPage = \"" . $backlinkTalk . "\";
+var wgArticleTabText = \"" . str_replace("_", " ", $nsTabText) . "\";
+var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 /*]]>*/</script>\n";
 		$wgOut->addScript( $script );
 
