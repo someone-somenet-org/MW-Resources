@@ -38,23 +38,20 @@ class Resources extends SpecialPage {
 		$backlinkTitle;
 
 		/* make a Title object from $par */
-		if ( $par )
+		if ( $par ) {
 			$this->title = Title::newFromText( $par );
-		else {
+		} else {
 			$wgOut->addWikiText( wfMsg('no_page_specified') );
 			return;
 		}
 
-		if ( $this->title->isSubpage() )
-			$backlinkTitle = Title::newFromText( $this->title->getBaseText() );
-		else
-			$backlinkTitle = $this->title;
+		$backlinkTitle = $this->title;
 		$backlinkTalkTitle = $backlinkTitle->getTalkPage();
 		$backlinkTalk = $backlinkTalkTitle->getPrefixedText();
 
 		/* make backlink variable for script in MediaWiki:Common.js */
 		$script = "<script type=\"text/javascript\">/*<![CDATA[*/
-var downloadPage = \"" . $backlinkTitle->getBaseText() . "\";
+var downloadPage = \"" . $backlinkTitle->getPrefixedText() . "\";
 var downloadTalkPage = \"" . $backlinkTalk . "\";
 /*]]>*/</script>\n";
 		$wgOut->addScript( $script );
