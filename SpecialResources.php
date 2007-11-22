@@ -175,9 +175,7 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 				// this code is also used below in the else-statement
 				$fileArticle = new Image( $targetTitle );
 
-				$link = '<span class="plainlinks">' .
-					$skin->makeExternalLink( $fileArticle->getURL(),
-					$displayTitle ) . '</span>';
+				$link = $skin->makeMediaLinkObj( $targetTitle, $displayTitle );
 				$size = $this->size_readable( $fileArticle->getSize(), 'GB', '%01.0f %s' );
 				$detailLink = $skin->makeSizeLinkObj(
 					$pageLength, $targetTitle, wfMsg( 'details' ) );
