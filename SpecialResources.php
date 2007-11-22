@@ -167,23 +167,24 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 			$pageLength = $row->page_len;
 
 			// the sortkey is suffixed with the NS in case we have articles with same name
-			$sortkey = $targetTitle->getText() . ":" . $row->page_namespace;
+			$displayTitle = str_replace( $prefix, '', $targetTitle->getText() );
+			$sortkey = $displayTitle . " - " . $prefix . ":" . $row->page_namespace;
 	
 			/* create link and comment text */
 			if ( $row->page_namespace == NS_IMAGE && $wgResourcesDirectFileLinks ) {
 				// this code is also used below in the else-statement
 				$fileArticle = new Image( $targetTitle );
+
 				$link = '<span class="plainlinks">' .
 					$skin->makeExternalLink( $fileArticle->getURL(),
-					$targetTitle->getText() ) . '</span>';
+					$displayTitle ) . '</span>';
 				$size = $this->size_readable( $fileArticle->getSize(), 'GB', '%01.0f %s' );
 				$detailLink = $skin->makeSizeLinkObj(
 					$pageLength, $targetTitle, wfMsg( 'details' ) );
 				$comment = wfMsg ( 'fileCommentWithDetails', $size, $fileArticle->getMimeType(), $detailLink );
 			} else {
 				$link = $skin->makeSizeLinkObj(
-					$pageLength, $targetTitle, $targetTitle->getText() );
-
+					$pageLength, $targetTitle, $displayTitle );
 				/* FileArticles still get a special treatment to print the size etc. */
 				if ( $row->page_namespace == NS_IMAGE ) {
 					// this code is also used above!
