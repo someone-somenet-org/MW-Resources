@@ -28,10 +28,11 @@ class Resources extends SpecialPage {
 	
 	/**
 	 * main worker-function...
+	 * @param par the part after the '/' from the HTTP-Request
 	 */
 	function execute ( $par ) {
 		global $wgOut, $wgRequest;
-		global $resources_showPages, $resources_showSubpages, $resources_showLinks;
+		global $wgResourcesShowPages, $wgResourcesShowSubpages, $wgResourcesShowLinks;
 		// variables from foreign extensions:
 		global $wgEnableExternalRedirects;
 		$this->setHeaders();
@@ -70,31 +71,34 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 	}
 
 	/** 
-	 * this populates the global $resourceList
+	 * generate a list of resources for a given title
+	 * @param title The title we want to build the list for
+	 * @return a list containing the pages
 	 */
 	function getResourceList( $title ) {
-		global $resources_showPages, $resources_showSubpages, $resources_showLinks;
+		global $wgResourcesShowPages, $wgResourcesShowSubpages, $wgResourcesShowLinks;
 		// variables from foreign extensions:
 		global $wgEnableExternalRedirects;
 		$resourceList = array();
 
 		/* add the list of pages linking here, if desired */
-		if ( $resources_showPages or $resources_showPages == NULL ) 
+		if ( $wgResourcesShowPages or $wgResourcesShowPages == NULL ) 
 			$resourceList = array_merge( $resourceList, $this->getFiles( $title ) );
 		/* add the list of subpages, if desired */
-		if ( $resources_showSubpages or $resources_showSubpages == NULL )
+		if ( $wgResourcesShowSubpages or $wgResourcesShowSubpages == NULL )
 			$resourceList = array_merge( $resourceList, $this->getSubpages( $title ) );
 		/* add a list of foreign links (requires ExternalRedirects extension) */
 		if ( $wgEnableExternalRedirects and
-			( $resources_showLinks or $resources_showLinks == NULL ) )
+			( $wgResourcesShowLinks or $wgResourcesShowLinks == NULL ) )
 			$resourceList = array_merge( $resourceList, $this->getLinks( $title ) );
 		return $resourceList;
 	}
 
 	/**
-	 * get a list of pages linking to $title
+	 * get a list of pages linking to $title. The algorithm used here
+	 * is a modified version of the algorithm used in Special:Whatlinkshere
 	 * @return array with the structure:
-	 *		[0] => array( $sortkey => ($type, $link, $linktext) )
+	 *		[0] => array( $sortkey => ($link, $second_line) )
 	 */
 	function getFiles( $title ) {
 		$dbr =& wfGetDB( DB_READ );
@@ -108,12 +112,14 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 				'page_id=pl_from',
 				'pl_namespace' => $title->getNamespace(),
 				'pl_title' => $title->getDBkey(),
+				'page_latest=rev_id',
 				);
 
 		$tlConds = array(
 				'page_id=tl_from',
 				'tl_namespace' => $title->getNamespace(),
 				'tl_title' => $title->getDBkey(),
+				'page_latest=rev_id',
 				);
 
 		// Read an extra row as an at-end check
@@ -123,10 +129,10 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 			$tlConds[] = $offsetCond;
 			$plConds[] = $offsetCond;
 		}
-		$fields = array( 'page_id', 'page_namespace', 'page_title', 'page_is_redirect' );
-		$plRes = $dbr->select( array( 'pagelinks', 'page' ), $fields,
+		$fields = array( 'page_id', 'page_namespace', 'page_title', 'page_is_redirect', 'page_len', 'rev_timestamp' );
+		$plRes = $dbr->select( array( 'pagelinks', 'page', 'revision' ), $fields,
 				$plConds, $fname );
-		$tlRes = $dbr->select( array( 'templatelinks', 'page' ), $fields,
+		$tlRes = $dbr->select( array( 'templatelinks', 'page', 'revision' ), $fields,
 				$tlConds, $fname );
 		if ( !$dbr->numRows( $plRes ) && !$dbr->numRows( $tlRes ) ) {
 			return array();
@@ -146,36 +152,72 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 		}
 		$dbr->freeResult( $tlRes );
 
-		// Sort by key and then change the keys to 0-based indices
-		ksort( $rows );
+		// change the keys to 0-based indices
 		$rows = array_values( $rows );
 		$numRows = count( $rows );
 
-		global $resources_Namespaces, $wgContLang;
+		global $wgSkin, $wgContLang, $wgUser;
+		global $wgResourcesNamespaces, $wgResourcesDirectFileLinks;
+		$skin = $wgUser->getSkin();
 		foreach ( $rows as $row ) {
 			if ( $row->page_namespace != 6 ) 
-				continue;
+				continue; /* TODO! */
 
-			$tmp = str_replace( '_', ' ', $row->page_title );
-			$displayTitle = str_replace( $prefix, '', $tmp );
-			$sortkey = $displayTitle . ":" . $row->page_namespace;
+			$targetTitle = Title::makeTitleSafe( $row->page_namespace, $row->page_title );
+			$pageLength = $row->page_len;
 
-			$result[$sortkey] = array ($row->page_namespace, $row->page_title, $displayTitle);
+			// the sortkey is suffixed with the NS in case we have articles with same name
+			$sortkey = $targetTitle->getText() . ":" . $row->page_namespace;
+	
+			/* create link and comment text */
+			if ( $row->page_namespace == NS_IMAGE && $wgResourcesDirectFileLinks ) {
+				// this code is also used below in the else-statement
+				$fileArticle = new Image( $targetTitle );
+				$link = '<span class="plainlinks">' .
+					$skin->makeExternalLink( $fileArticle->getURL(),
+					$targetTitle->getText() ) . '</span>';
+				$size = $this->size_readable( $fileArticle->getSize(), 'GB', '%01.0f %s' );
+				$detailLink = $skin->makeSizeLinkObj(
+					$pageLength, $targetTitle, wfMsg( 'details' ) );
+				$comment = wfMsg ( 'fileCommentWithDetails', $size, $fileArticle->getMimeType(), $detailLink );
+			} else {
+				$link = $skin->makeSizeLinkObj(
+					$pageLength, $targetTitle, $targetTitle->getText() );
+
+				/* FileArticles still get a special treatment to print the size etc. */
+				if ( $row->page_namespace == NS_IMAGE ) {
+					// this code is also used above!
+					$fileArticle = new Image( $targetTitle );
+					$size = $this->size_readable( $fileArticle->getSize(), 'GB', '%01.0f %s' );
+					$comment = wfMsg( 'fileComment', $size, $fileArticle->getMimeType() );
+				} else {
+					$comment = $this->createPageComment( $targetTitle->getNsText(),
+							$row->page_len, $row->rev_timestamp );
+				}
+			}
+
+			$result[$sortkey] = array ( $link, $comment );
+
 		}
 		return $result;
 	}
 
 	/**
-	 * get a list of Subpages of $title
+	 * get a list of Subpages for $title. This function is a modfied
+	 * version of the algorithm of Special:Prefixindex.
+	 * @param title The title of the page we want the subpages of
 	 * @return array with the structure:
-	 *		[0] => array( $sortkey => ($type, $link, $linktext) )
+	 *		[0] => array( $sortkey => ( $link, $linkInfo ) )
 	 */
 	function getSubpages( $title ) {
-		global $resources_SubpagesIncludeRedirects;
+		global $wgUser;
+		global $wgResourcesSubpagesIncludeRedirects;
+		$skin = $wgUser->getSkin();
 		$result = array ();
 		$prefix = $title->getPrefixedDBkey() . '/';
 		$fname = 'Resources::getSubpages';
 
+		/* make a query */
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
 		list( $namespace, $prefixKey, $prefix ) = $prefixList;
 
@@ -184,39 +226,47 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 				'page_namespace' => $namespace,
 				'page_title LIKE \'' . $dbr->escapeLike( $prefixKey ) .'%\'',
 				'page_title >= ' . $dbr->addQuotes( $prefixKey ),
+				'page_latest=rev_id',
 				);
-		if ( $resources_SubpagesIncludeRedirects == false )
+		if ( $wgResourcesSubpagesIncludeRedirects == false )
 			$db_conditions = array_merge( $db_conditions, array('page_is_redirect=0'));
 
-		$res = $dbr->select( 'page',
-				array( 'page_namespace', 'page_title', 'page_is_redirect' ),
+		$res = $dbr->select( array('page', 'revision'),
+				array( 'page_namespace', 'page_title', 'page_len', 'rev_timestamp' ),
 				$db_conditions,
-				$fname,
-				array(
-					'ORDER BY'  => 'page_title',
-					'USE INDEX' => 'name_title',
-				     )
+				$fname
 				);
 
+		/* use the results of the query */
 		while ( $row = $dbr->fetchObject( $res ) ) {
-			$niceTitle = str_replace('_', ' ', $row->page_title);
-			$tmp = str_replace( $prefix, '', $niceTitle );
-			$displayTitle = ucfirst( $tmp );
-			$sortkey = ucfirst( $tmp ) . ":" . $row->page_namespace;
-			$result[$sortkey] = array ($row->page_namespace, $row->page_title, $displayTitle );
+			$targetTitle = Title::makeTitleSafe( $row->page_namespace, $row->page_title );
+
+			$link = $skin->makeSizeLinkObj(
+				$pageLength, $targetTitle, $targetTitle->getSubpageText() );
+			$comment = $this->createPageComment( wfMsg('subpage'),
+				$row->page_len, $row->rev_timestamp );
+			$sortkey = $targetTitle->getSubpageText() . '/' .
+				$targetTitle->getBaseText() . ':' . $targetTitle->getNsText();
+			
+			$result[$sortkey] = array( $link, $comment );
 		}
 		return $result;
 	}
 
 	/**
-	 * get a list of ExternalRedirects of $title
+	 * get a list of ExternalRedirects for $title. The algorithm we use here is
+	 * a modified version of the algorithm used in Special:Prefixindex. We
+	 * @param title the title we get the external redirects for
 	 * @return array with the structure:
-	 *		[0] => array( $sortkey => ($type, $link, $linktext) )
+	 *		[0] => array( $sortkey => ( $link, $linkInfo )
 	 */
 	function getLinks( $title ) {
-		global $IP;
+		global $IP, $wgUser;
+		$skin = $wgUser->getSkin();
+		$result = array();
 		require_once("$IP/extensions/ExternalRedirects/ExternalRedirects.php");
 
+		/* make the query */
 		$prefix = $title->getPrefixedDBkey() . "/";
 		$fname = 'Resources::getLinks';
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
@@ -224,7 +274,7 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 
 		$dbr = wfGetDB( DB_SLAVE );
 		$res = $dbr->select( 'page',
-				array( 'page_namespace', 'page_title', 'page_is_redirect' ),
+				array( 'page_namespace', 'page_title' ),
 				array( 'page_namespace' => $namespace,
 					'page_title LIKE \'' . $dbr->escapeLike( $prefixKey ) .'%\'',
 					'page_title >= ' . $dbr->addQuotes( $prefixKey ),
@@ -237,32 +287,32 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 				     )
 				);
 
-		$result = array();
-
+		/* use the results */
 		while ( $row = $dbr->fetchObject( $res ) ) {
-			/* WARNING: retrieving the content of pages we find here is somewhat
-			   complicated. It has to emulate some functions of Article.php. We
-			   cannot simpy do a $article->fetchContent, because this triggers some
-			   hooks, especially the one we use for external redirection!
-			   We don't do all that fancy error checking that Article.php does 
-			   (yet). */
-			   
-			$linkTitle = Title::newFromText( $row->page_title, $row->page_namespace );
-			$linkArticle = new Article( $linkTitle ); /* create article obj */
-			$data = $linkArticle->pageDataFromTitle( $dbr, $linkTitle ); /* get some data */
-			$linkArticle->loadPageData( $data ); /* save that data (i.e. mLatest from next line */
-			$revision = Revision::newFromId( $linkArticle->mLatest ); /* create a revision */
-			/* finally get some text from that revision */
-			$linkArticle->mContent = $revision->userCan( Revision::DELETED_TEXT ) ? $revision->getRawText() : "";
-			list($num, $target, $targetInfo) = getTargetInfo( $linkArticle );
-			if ($num == 0)
-				continue;
-			$niceTitle = str_replace('_', ' ', $row->page_title);
-			$tmp = str_replace( $prefix, '', $niceTitle );
-			$displayTitle = ucfirst( $tmp );
-			$sortkey = ucfirst( $tmp ) . ":" . $row->page_namespace;
-			$result[$sortkey] = array( "http", $target, array($displayTitle, $linkTitle) );
+			$targetTitle = Title::makeTitleSafe( $row->page_namespace, $row->page_title );
 
+			/* fetch content of found article */
+			$targetArticle = new Article( $targetTitle ); /* create article obj */
+			$data = $targetArticle->pageDataFromTitle( $dbr, $targetTitle ); /* get some data */
+			$targetArticle->loadPageData( $data ); /* save that data (i.e. mLatest from next line */
+			$revision = Revision::newFromId( $targetArticle->mLatest ); /* create a revision */
+			/* finally get some text from that revision */
+			$targetArticle->mContent = $revision->userCan( Revision::DELETED_TEXT ) ? $revision->getRawText() : "";
+			
+			/* parse content of found article (see ExternalRedirect.php) */
+			list($num, $target, $targetInfo) = getTargetInfo( $targetArticle );
+			if ($num == 0) 
+				continue; // not an external redirect
+
+			$link = $skin->makeExternalLink(
+					$target, $targetTitle->getSubpageText() );
+			$linkInfo = $targetInfo . ' (' . $skin->makeKnownLink( $targetTitle->getPrefixedText(),
+					wfMsg('redirect_link_view'), 'redirect=no') . ')';
+			$sortkey = ucfirst( $targetTitle->getSubpageText() ) . '/' .
+				$targetTitle->getBaseText() . ':' .
+				$targetTitle->getNsText();
+
+			$result[$sortkey] = array( $link, $linkInfo );
 		}
 		return $result;
 	}
@@ -294,15 +344,13 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 	}
 
 	/**
-	 * creates a category-style list of all the resources we found. This
-	 * function includes special treatment for ExternalRedirects as well
-	 * as for files, which can be directly linked by setting
-	 * 		$resources_enableDirectFileLinks
+	 * Creates a category-style list of all the resources we found.
+	 * This function emulates various functions in CategoryViewer.php.
 	 * @return string - a HTML-representation of the array.
 	 */
 	function makeList() {
 		global $wgTitle, $wgContLang, $wgCanonicalNamespaceNames;
-		global $resources_enableDirectFileLinks;
+		global $wgResourcesAddInfos;
 		$catPage = new CategoryViewer( $wgTitle );
 		$skin = $catPage->getSkin();
 		ksort( $this->resourceList );
@@ -311,24 +359,12 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 		$catPage->clearCategoryState();
 		// populate:
 		foreach ( $this->resourceList as $sortkey=>$value) {
-			if ( $value[0] == 'http' ) {
-				$catPage->articles[] = $skin->makeExternalLink(
-					$value[1], $value[2][0]
-				) . ' (' . $skin->makeKnownLink( $value[2][1]->getPrefixedText(),
-					wfMsg('redirect_link_view'), 'redirect=no') . ')';
-			} elseif ( $value[0] == NS_IMAGE and $resources_enableDirectFileLinks) {
-				$fileTitle = Title::makeTitle( $value[0], $value[1] );
-				$fileArticle = new Image( $fileTitle ); /* create article obj */
-				$catPage->articles[] = '<span class="plainlinks">' . 
-					$skin->makeExternalLink( $fileArticle->getURL(),
-					$value[2]) . '</span>';
-			} else {
-				$title = Title::makeTitle( $value[0], $value[1] );
-				$catPage->articles[] = $skin->makeSizeLinkObj(
-					$pageLength, $title, $wgContLang->convert( $value[2] )
-				);
-			}
 			$catPage->articles_start_char[] = $wgContLang->convert( $wgContLang->firstChar( $sortkey ) );
+			if ( $wgResourcesAddInfos ) {
+				$catPage->articles[] = $value[0] . '<br />' . $value[1];
+			} else {
+				$catPage->articles[] = $value[0];
+			}
 		}
 		
 		if( count( $catPage->articles ) > 0 )
@@ -354,23 +390,95 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 		return true;
 	}
 
+	/**
+	 * function used by SimilarNamedArticles to print the number of
+	 * resources for the given title.
+	 * @param title Article for that we want the number of resources
+	 * @return int the number of resources for the article.
+	 */
 	public function getResourceListCount( $title ) {
-		global $resources_showPages, $resources_showSubpages, $resources_showLinks;
+		global $wgResourcesShowPages, $wgResourcesShowSubpages, $wgResourcesShowLinks;
 		// variables from foreign extensions:
 		global $wgEnableExternalRedirects;
 		$resourceList = array();
 
 		/* add the list of pages linking here, if desired */
-		if ( $resources_showPages or $resources_showPages == NULL ) 
+		if ( $wgResourcesShowPages or $wgResourcesShowPages == NULL ) 
 			$resourceList = array_merge( $resourceList, $this->getFiles( $title ) );
 		/* add the list of subpages, if desired */
-		if ( $resources_showSubpages or $resources_showSubpages == NULL )
+		if ( $wgResourcesShowSubpages or $wgResourcesShowSubpages == NULL )
 			$resourceList = array_merge( $resourceList, $this->getSubpages( $title ) );
 		/* add a list of foreign links (requires ExternalRedirects extension) */
 		if ( $wgEnableExternalRedirects and
-			( $resources_showLinks or $resources_showLinks == NULL ) )
+			( $wgResourcesShowLinks or $wgResourcesShowLinks == NULL ) )
 			$resourceList = array_merge( $resourceList, $this->getLinks( $title ) );
 		return count($resourceList);
+	}
+
+	/**
+	 * create a comment to the given (sub)page. This is mainly used to
+	 * parse the timestamp.
+	 * @param info the namespace for pages, wfMsg('subpage') for subpages
+	 * @param length the length of the page
+	 * @param timestamp the timestamp as found in the MW-database
+	 * 		('YYYYmmddHHMMSS')
+	 * @return string the comment that is later printed
+	 */
+	private function createPageComment( $info, $length, $timestamp ) {
+		/* parse timestamp */
+		$time = strptime( $timestamp, '%Y%m%d%H%M%S' );
+		$timestamp = mktime( $time[tm_hour], 
+			$time[tm_min],
+			$time[tm_sec],
+			$time[tm_mon],
+			$time[tm_day], 
+			$time[tm_year] );
+		$lastChange = strftime( '%Y-%m-%d %H:%M', $timestamp );
+
+		return wfMsg( 'pageComment', $info, $length, $lastChange) ;
+	}
+
+	/**
+	 * Return human readable sizes 
+	 *
+	 * @author	  Aidan Lister <aidan@php.net>
+	 * @version     1.1.0
+	 * @link        http://aidanlister.com/repos/v/function.size_readable.php
+	 * @param       int    $size        Size
+	 * @param       int    $unit        The maximum unit
+	 * @param       int    $retstring   The return string format
+	 * @param	   int    $si          Whether to use SI prefixes
+	 */
+	function size_readable($size, $unit = null, $retstring = null, $si = true) {
+		// Units
+		if ($si === true) {
+			$sizes = array('B', 'kB', 'MB', 'GB', 'TB', 'PB');
+			$mod   = 1000;
+		} else {
+			$sizes = array('B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB');
+			$mod   = 1024;
+		}
+		$ii = count($sizes) - 1;
+ 
+		// Max unit
+		$unit = array_search((string) $unit, $sizes);
+		if ($unit === null || $unit === false) {
+			$unit = $ii;
+		}
+ 
+		// Return string
+		if ($retstring === null) {
+			$retstring = '%01.2f %s';
+		}
+ 
+		// Loop
+		$i = 0;
+		while ($unit != $i && $size >= 1024 && $i < $ii) {
+			$size /= $mod;
+			$i++;
+		}
+ 
+		return sprintf($retstring, $size, $sizes[$i]);
 	}
 
 }
