@@ -302,6 +302,8 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 			list($num, $target, $targetInfo) = getTargetInfo( $targetArticle );
 			if ($num == 0) 
 				continue; // not an external redirect
+			
+			$targetInfo = Sanitizer::removeHTMLtags( $targetInfo ); //remove dangerous HTML tags
 
 			$link = $skin->makeExternalLink(
 					$target, $targetTitle->getSubpageText() );
