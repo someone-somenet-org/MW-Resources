@@ -13,6 +13,14 @@ $wgSpecialPages[ 'Resources' ] = 'Resources';
 $wgHooks['LoadAllMessages'][] = 'Resources::loadMessages';
 $wgHooks['LangugeGetSpecialPageAliases'][] = 'Resources_LocalizedPageName';
 
+$wgExtensionCredits['specialpage'][] = array (
+	'name' => 'Resources',
+	'description' => 'Displays resources attached to an article (with the AddResource extension)',
+	'version' => '0.9-1.11.0',
+	'author' => 'Mathias Ertl',
+	'url' => 'http://pluto.htu.tuwien.ac.at/devel_wiki/index.php/Resources',
+);
+
 function Resources_LocalizedPageName( &$specialPageArray, $code) {
 	Resources::loadMessages();
 	$text = wfMsg('resources');
