@@ -6,7 +6,7 @@ $allMessages = array(
 Error: No pagename was specified',
 		'header' => '= Resources for $1 =',
 		'header_text' => 'There are currently $1 resources for this page. You may want to [[$2/$3|add a new one]]?',
-		'header_text_none' => 'There are currently \'\'\'no resources\'\'\' for this page. You can of course [[$1/$2|add a new one]]!',
+		'header_text_none' => 'There are currently \'\'\'no resources\'\'\' for this page. You can of course [[$2/$1|add a new one]]!',
 		'header_text_one' => 'There is currently one resource for this page. You may want to [[$2/3|add a new one]]?',
 		'redirect_link_view' => 'details',
 		'details' => 'details',
