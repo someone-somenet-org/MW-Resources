@@ -428,13 +428,13 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 	private function createPageComment( $info, $length, $timestamp ) {
 		/* parse timestamp */
 		$time = strptime( $timestamp, '%Y%m%d%H%M%S' );
-		$timestamp = mktime( $time[tm_hour], 
-			$time[tm_min],
-			$time[tm_sec],
-			$time[tm_mon],
-			$time[tm_day], 
-			$time[tm_year] );
-		$lastChange = strftime( '%Y-%m-%d %H:%M', $timestamp );
+		$timestamp = mktime( $time['tm_hour'], 
+			$time['tm_min'],
+			$time['tm_sec'],
+			1,
+			$time['tm_yday'] + 1, 
+			$time['tm_year'] + 1900 );
+		$lastChange = date( 'Y-m-d H:i', $timestamp );
 
 		return wfMsg( 'pageComment', $info, $length, $lastChange) ;
 	}
