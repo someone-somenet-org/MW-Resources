@@ -11,7 +11,7 @@ EOT;
 $wgAutoloadClasses['Resources'] = dirname(__FILE__) . '/SpecialResources.php';
 $wgSpecialPages[ 'Resources' ] = 'Resources';
 $wgHooks['LoadAllMessages'][] = 'Resources::loadMessages';
-$wgHooks['LangugeGetSpecialPageAliases'][] = 'Resources_LocalizedPageName';
+$wgHooks['LanguageGetSpecialPageAliases'][] = 'Resources_LocalizedPageName';
 
 $wgExtensionCredits['specialpage'][] = array (
 	'name' => 'Resources',
