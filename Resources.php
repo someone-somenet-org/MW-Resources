@@ -16,9 +16,9 @@ $wgHooks['LanguageGetSpecialPageAliases'][] = 'Resources_LocalizedPageName';
 $wgExtensionCredits['specialpage'][] = array (
 	'name' => 'Resources',
 	'description' => 'Displays resources attached to an article (with the AddResource extension)',
-	'version' => '0.9.1-1.11.0',
+	'version' => '0.9.2-1.12.0',
 	'author' => 'Mathias Ertl',
-	'url' => 'http://pluto.htu.tuwien.ac.at/devel_wiki/index.php/Resources',
+	'url' => 'http://pluto.htu.tuwien.ac.at/devel_wiki/Resources',
 );
 
 function Resources_LocalizedPageName( &$specialPageArray, $code) {
