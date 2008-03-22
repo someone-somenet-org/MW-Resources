@@ -12,11 +12,12 @@ $wgAutoloadClasses['Resources'] = dirname(__FILE__) . '/SpecialResources.php';
 $wgSpecialPages[ 'Resources' ] = 'Resources';
 $wgHooks['LoadAllMessages'][] = 'Resources::loadMessages';
 $wgHooks['LanguageGetSpecialPageAliases'][] = 'Resources_LocalizedPageName';
+$wgHooks['SkinTemplateContentActions'][] = 'displayResourcesTab';
 
 $wgExtensionCredits['specialpage'][] = array (
 	'name' => 'Resources',
 	'description' => 'Displays resources attached to an article (with the AddResource extension)',
-	'version' => '0.9.2-1.12.0',
+	'version' => '1.0-1.12.0',
 	'author' => 'Mathias Ertl',
 	'url' => 'http://pluto.htu.tuwien.ac.at/devel_wiki/Resources',
 );
@@ -28,6 +29,104 @@ function Resources_LocalizedPageName( &$specialPageArray, $code) {
 	# Convert from title in text form to DBKey and put it into the alias array:
 	$title = Title::newFromText( $text );
 	$specialPageArray['Resources'][] = $title->getDBKey();
+
+	return true;
+}
+
+function displayResourcesTab( $tabs ) {
+	global $wgTitle, $wgResourcesTabs;
+	if ( ! $wgResourcesTabs ) 
+		return true;
+	$ns = $wgTitle->getNamespace();
+	
+	if ( $ns == -1 ) {
+		/* we are on a special page */
+		$curSpecialPage = $wgTitle->getPrefixedText();
+
+		// return if we are not on the right special page
+		if ( $curSpecialPage != SpecialPage::getTitleFor( 'Resources' ) )
+			return true;
+
+		// get $par:
+		global $wgRequest, $wgUser, $wgAddResourceTab;
+		$reqTitle = $wgRequest->getVal('title');
+		$par = preg_replace('/' . $curSpecialPage . '\/?/', '', $reqTitle );
+		if ( $par == '' ) // if no /par was given
+			return true;
+		$parTitle = Title::newFromText( $par )->getSubjectPage();
+		$parTalkTitle = $parTitle->getTalkPage();
+
+		/* build tabs */
+		$skin = $wgUser->getSkin();
+		$nskey = $parTitle->getNamespaceKey();
+
+		// subject page and talk page:
+		$customTabs[$nskey] = $skin->tabAction(
+			$parTitle, $nskey, false, '', true);
+		$customTabs['talk'] = $skin->tabAction(
+			$parTalkTitle, 'talk', false, '', true);
+
+		// downloads-tab:
+		$customTabs['view-resources'] = array ( 'class' => 'selected',
+			'text' => wfMsg('ResourcesTab'),
+			$tabs['nstab-special']['href'] );
+		
+		/* get number of resources (and redden link if 0) */
+		$resourcesPage = new Resources();
+		$resourcesCount = $resourcesPage->getResourceListCount( $parTitle );
+		if ( ! $resourcesCount )
+			$customTabs['view-resources']['class'] .= ' new';
+
+		// display add-resources tab, if requested
+		if ( $wgAddResourceTab ) {
+			$page = SpecialPage::getTitleFor( 'AddResource' );
+			$customTabs['add-resources'] = array ( 
+				'class' => false,
+				'text' => wfMsg('addResourceTab'),
+				'href' => $page->getLocalURL() . '/' .
+					$parTitle->getPrefixedText()
+			);
+		}
+
+		$tabs = $customTabs;
+	} else {
+		/* subject/talk page */
+		global $wgResourcesNamespaces;
+		if ( ! ( in_array( $ns, $wgResourcesNamespaces ) ||
+				in_array( $ns - 1, $wgResourcesNamespaces ) ) )
+			return true; /* user doesn't want tab here */
+		$mainTabs = array_slice ( $tabs, 0, 2, true );
+		$secondaryTabs = array_splice( $tabs, 0, 2 );
+		$title = $wgTitle->getSubjectPage();
+		$titleBase = Title::newFromText( $title->getBaseText(),
+			$title->getNamespace() );
+
+		// this is in case we are on a sub-subpage, we want
+		// the top-most page, i.e. 'article' from 'article/sub/sub':
+		while ( $titleBase->isSubPage() ) {
+			$titleBase = Title::newFromText( $titleBase->getBaseText(),
+				$title->getNamespace() );
+
+			if ( $titleBase->exists() )
+				$title = $titleBase;
+		}
+		if ( $titleBase->exists() )
+			$title = $titleBase;
+		
+		$specialPage = SpecialPage::getTitleFor( 'Resources' );
+		$mainTabs['view-resources'] = array( 'class' => false,
+			'text' => wfMsg( 'resourcesTab' ),
+			'href' => $specialPage->getLocalURL() . '/' .
+				$title->getPrefixedText() );
+		
+		/* get number of resources (and redden link if 0) */
+		$resourcesPage = new Resources();
+		$resourcesCount = $resourcesPage->getResourceListCount( $title );
+		if ( ! $resourcesCount )
+			$mainTabs['view-resources']['class'] = 'new';
+
+		$tabs = array_merge( $mainTabs, $tabs );
+	}
 
 	return true;
 }

@@ -45,6 +45,8 @@ class Resources extends SpecialPage {
 			$wgOut->addWikiText( wfMsg('no_page_specified') );
 			return;
 		}
+		
+		$wgOut->setPagetitle( wfMsg('resourcesPageTitle', $this->title->getPrefixedText() ) );
 
 		$backlinkTitle = $this->title;
 		$backlinkTalkTitle = $backlinkTitle->getTalkPage();
@@ -332,7 +334,6 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 		$titleText = $this->title->getFullText();
 		$r = "<div id=\"mw-pages\">\n";
 		$addResourceText = SpecialPage::getTitleFor( 'AddResource' );
-		$r .= wfMsg( 'header', $titleText ) . "\n";
 		if ( $count > 1 ) {
 			$r .= wfMsg( 'header_text', $count, $addResourceText, $titleText );
 		} elseif ( $count == 1 ) {
