@@ -254,7 +254,6 @@ class Resources extends SpecialPage {
 		global $IP, $wgUser;
 		$skin = $wgUser->getSkin();
 		$result = array();
-		require_once("$IP/extensions/ExternalRedirects/ExternalRedirects.php");
 
 		/* make the query */
 		$prefix = $title->getPrefixedDBkey() . "/";
