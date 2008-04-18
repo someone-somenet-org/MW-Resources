@@ -15,7 +15,7 @@ $wgExtensionMessagesFiles['Resources'] = $dir . '/Resources.i18n.php';
 $wgSpecialPages[ 'Resources' ] = 'Resources';
 $wgHooks['LanguageGetSpecialPageAliases'][] = 'efResourcesLocalizedPageName';
 
-$wgHooks['SkinTemplateContentActions'][] = 'efDisplayResourcesTab';
+$wgHooks['SkinTemplateContentActions'][] = 'efResourcesDisplayTab';
 $wgHooks['BeforePageDisplay'][] = 'efResourcesTabCSS';
 
 $wgExtensionCredits['specialpage'][] = array (
@@ -53,7 +53,7 @@ function efResourcesTabCSS( &$outputPage )  {
 	return true;
 }
 
-function efDisplayResourcesTab( $tabs ) {
+function efResourcesDisplayTab( $tabs ) {
 	global $wgResourcesTabs, $wgTitle;
 	if ( ! $wgResourcesTabs ) 
 		return true;
