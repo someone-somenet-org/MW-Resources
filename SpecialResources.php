@@ -1,13 +1,6 @@
 <?php
 
 /**
- * Entry point
- */
-function efRunResources( $par ) {
-	Resources::run( $par );
-}
-
-/**
  * The class implementing Special:Resources (a.k.a. Spezial:Materialien).
  */
 class Resources extends SpecialPage {
@@ -20,7 +13,7 @@ class Resources extends SpecialPage {
 	 * ctor, only calls i18n-routine and creates special page
 	 */
 	function Resources() {
-		SpecialPage::SpecialPage( 'Resources', '', true, 'efRunResources' );
+		SpecialPage::SpecialPage( 'Resources' );
 		wfLoadExtensionMessages('Resources');
 	}
 	
@@ -28,12 +21,12 @@ class Resources extends SpecialPage {
 	 * main worker-function...
 	 * @param par the part after the '/' from the HTTP-Request
 	 */
-	function run( $par ) {
+	function execute( $par ) {
 		global $wgOut, $wgRequest;
 		global $wgResourcesShowPages, $wgResourcesShowSubpages, $wgResourcesShowLinks;
 		// variables from foreign extensions:
 		global $wgEnableExternalRedirects;
-#		$this->setHeaders();
+		$this->setHeaders();
 		$backlinkTitle;
 
 		/* make a Title object from $par */
@@ -53,13 +46,7 @@ class Resources extends SpecialPage {
 				shownamespace=false
 				category=" . $wgResourcesCategory . 
 				"</dpl>" );
-/*				$wgOut->addWikiText( '<dpl>
-				'oneresultheader=' . wfMsg('header_allResourcesOne') .
-				'noresultsheader=' . wfMsg('header_allResourcesNone') . 
-				'category=' . $wgResourcesCategory .
-				'shownamespace=false
-				</dpl>' );
-*/				$wgOut->setPagetitle( wfMsg( 'title_allResources' ) );
+				$wgOut->setPagetitle( wfMsg( 'title_allResources' ) );
 			} else 
 				$wgOut->addWikiText( wfMsg('no_page_specified') );
 			return;
