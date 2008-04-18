@@ -3,10 +3,8 @@
 /**
  * Entry point
  */
-function wfSpecialResources ($par) {
-	global $wgOut;
-	$page = new Resources();
-	$page->execute($par);
+function efRunResources( $par ) {
+	Resources::run( $par );
 }
 
 /**
@@ -22,20 +20,20 @@ class Resources extends SpecialPage {
 	 * ctor, only calls i18n-routine and creates special page
 	 */
 	function Resources() {
-		self::loadMessages();
-		SpecialPage::SpecialPage( wfMsg('resources') ); // this is where the link points to
+		SpecialPage::SpecialPage( 'Resources', '', true, 'efRunResources' );
+		wfLoadExtensionMessages('Resources');
 	}
 	
 	/**
 	 * main worker-function...
 	 * @param par the part after the '/' from the HTTP-Request
 	 */
-	function execute ( $par ) {
+	function run( $par ) {
 		global $wgOut, $wgRequest;
 		global $wgResourcesShowPages, $wgResourcesShowSubpages, $wgResourcesShowLinks;
 		// variables from foreign extensions:
 		global $wgEnableExternalRedirects;
-		$this->setHeaders();
+#		$this->setHeaders();
 		$backlinkTitle;
 
 		/* make a Title object from $par */
@@ -162,6 +160,7 @@ class Resources extends SpecialPage {
 		global $wgSkin, $wgContLang, $wgUser;
 		global $wgResourcesNamespaces, $wgResourcesDirectFileLinks;
 		$skin = $wgUser->getSkin();
+//		print_r($_SERVER);
 		foreach ( $rows as $row ) {
 			if ( $row->page_namespace != 6 ) 
 				continue; /* TODO! */
@@ -390,23 +389,6 @@ class Resources extends SpecialPage {
 		$string = str_replace( 'Ö', 'Oe', $string );
 		$string = str_replace( 'Ü', 'Ue', $string );
 		return $string;
-	}
-
-	/**
-	 * internationalization stuff
-	 */
-	function loadMessages() {
-		static $messagesLoaded = false;
-		global $wgMessageCache;
-		if ( $messagesLoaded )
-			return true;
-		$messagesLoaded = true;
-
-		require( dirname( __FILE__ ) . '/Resources.i18n.php' );
-		foreach ( $allMessages as $lang => $langMessages ) {
-			$wgMessageCache->addMessages( $langMessages, $lang );
-		}
-		return true;
 	}
 
 	/**

@@ -8,33 +8,39 @@ EOT;
 	exit( 1 );
 }
 
-$wgAutoloadClasses['Resources'] = dirname(__FILE__) . '/SpecialResources.php';
+$dir = dirname(__FILE__);
+
+$wgAutoloadClasses['Resources'] = $dir . '/SpecialResources.php';
+$wgExtensionMessagesFiles['Resources'] = $dir . '/Resources.i18n.php';
 $wgSpecialPages[ 'Resources' ] = 'Resources';
-$wgHooks['LoadAllMessages'][] = 'Resources::loadMessages';
-$wgHooks['LanguageGetSpecialPageAliases'][] = 'Resources_LocalizedPageName';
-$wgHooks['SkinTemplateContentActions'][] = 'displayResourcesTab';
-$wgHooks['BeforePageDisplay'][] = 'efResourceTabCSS';
+$wgHooks['LanguageGetSpecialPageAliases'][] = 'efResourcesLocalizedPageName';
+
+$wgHooks['SkinTemplateContentActions'][] = 'efDisplayResourcesTab';
+$wgHooks['BeforePageDisplay'][] = 'efResourcesTabCSS';
 
 $wgExtensionCredits['specialpage'][] = array (
 	'name' => 'Resources',
 	'description' => 'Displays resources attached to an article (with the AddResource extension)',
-	'version' => '1.1-1.12.0',
+	'version' => '1.1.1-1.12.0',
 	'author' => 'Mathias Ertl',
 	'url' => 'http://pluto.htu.tuwien.ac.at/devel_wiki/Resources',
 );
 
-function Resources_LocalizedPageName( &$specialPageArray, $code) {
-	Resources::loadMessages();
-	$text = wfMsg('resources');
+function efResourcesLocalizedPageName( &$specialPageArray, $code) {
+	wfLoadExtensionMessages('Resources');
+	$textMain = wfMsgForContent('resources');
+	$textUser = wfMsg('resources');
 
 	# Convert from title in text form to DBKey and put it into the alias array:
-	$title = Title::newFromText( $text );
-	$specialPageArray['Resources'][] = $title->getDBKey();
+	$titleMain = Title::newFromText( $textMain );
+	$titleUser = Title::newFromText( $textUser );
+	$specialPageArray['Resources'][] = $titleMain->getDBKey();
+	$specialPageArray['Resources'][] = $titleUser->getDBKey();
 
 	return true;
 }
 
-function efResourceTabCSS( &$outputPage )  {
+function efResourcesTabCSS( &$outputPage )  {
 	global $wgResourcesTabs, $wgScriptPath, $wgResourcesCSSpath;
 	if ( ! $wgResourcesTabs )
 		return true;
@@ -47,7 +53,7 @@ function efResourceTabCSS( &$outputPage )  {
 	return true;
 }
 
-function displayResourcesTab( $tabs ) {
+function efDisplayResourcesTab( $tabs ) {
 	global $wgResourcesTabs, $wgTitle;
 	if ( ! $wgResourcesTabs ) 
 		return true;

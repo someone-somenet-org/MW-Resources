@@ -1,6 +1,6 @@
 <?php
-$allMessages = array(
-        'en' => array(
+$messages = array();
+$messages['en'] = array(
 		'resources' => 'Resources',
 		'resourcesTab' => 'resources',
 		'resourcesPageTitle' => 'Resources for $1',
@@ -18,8 +18,8 @@ $allMessages = array(
 		'fileComment' => '$1, $2',
 		'fileCommentWithDetails' => '$1, $2 ($3)',
 		'subpage' => 'Subpage',
-	),
-	'de' => array(
+	);
+$messages['de'] = array(
 		'resources' => 'Materialien',
 		'resourcesTab' => 'Materialien',
 		'materialien' => 'Materialien',
@@ -39,6 +39,5 @@ $allMessages = array(
 		'fileComment' => '$1, $2',
 		'fileCommentWithDetails' => '$1, $2 ($3)',
 		'subpage' => 'Unterseite',
-	)
-);
+	);
 ?>
