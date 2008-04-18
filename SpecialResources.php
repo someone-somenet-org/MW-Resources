@@ -41,31 +41,32 @@ class Resources extends SpecialPage {
 		/* make a Title object from $par */
 		if ( $par ) {
 			$this->title = Title::newFromText( $par );
+			$wgOut->setPagetitle( wfMsg('resourcesPageTitle', $this->title->getPrefixedText() ) );
 		} else {
-			$wgOut->addWikiText( wfMsg('no_page_specified') );
+			global $wgResourcesCategory;
+			if ( $wgResourcesCategory ) {
+				$wgOut->addWikiText( "<dpl>
+				mode=category
+				resultsheader=" . wfMsg('header_allResources') . 
+				"\noneresultheader=" . wfMsg('header_allResourcesOne') .
+				"\nnoresultsheader=" . wfMsg('header_allResourcesNone') . 
+				"\nredirects=include
+				ordermethod=titlewithoutnamespace
+				shownamespace=false
+				category=" . $wgResourcesCategory . 
+				"</dpl>" );
+/*				$wgOut->addWikiText( '<dpl>
+				'oneresultheader=' . wfMsg('header_allResourcesOne') .
+				'noresultsheader=' . wfMsg('header_allResourcesNone') . 
+				'category=' . $wgResourcesCategory .
+				'shownamespace=false
+				</dpl>' );
+*/				$wgOut->setPagetitle( wfMsg( 'title_allResources' ) );
+			} else 
+				$wgOut->addWikiText( wfMsg('no_page_specified') );
 			return;
 		}
 		
-		$wgOut->setPagetitle( wfMsg('resourcesPageTitle', $this->title->getPrefixedText() ) );
-
-		$backlinkTitle = $this->title;
-		$backlinkTalkTitle = $backlinkTitle->getTalkPage();
-		$backlinkTalk = $backlinkTalkTitle->getPrefixedText();
-		if ( $backlinkTitle->getNsText() == "" ) {
-			$nsTabText = wfMsg('nstab-main');
-		} else {
-			$nsTabText = $backlinkTitle->getNsText();
-		}
-
-		/* make backlink variable for script in MediaWiki:Common.js */
-		$script = "<script type=\"text/javascript\">/*<![CDATA[*/
-var downloadPage = \"" . $backlinkTitle->getPrefixedText() . "\";
-var downloadTalkPage = \"" . $backlinkTalk . "\";
-var wgArticleTabText = \"" . str_replace("_", " ", $nsTabText) . "\";
-var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
-/*]]>*/</script>\n";
-		$wgOut->addScript( $script );
-
 		$this->resourceList = $this->getResourceList( $this->title );
 
 		$wgOut->addWikiText( $this->printHeader() );
