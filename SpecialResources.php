@@ -171,6 +171,7 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 			// the sortkey is suffixed with the NS in case we have articles with same name
 			$displayTitle = str_replace( $prefix, '', $targetTitle->getText() );
 			$sortkey = $displayTitle . " - " . $prefix . ":" . $row->page_namespace;
+			$sortkey = $this->makeSortkeySafe( $sortkey );
 	
 			/* create link and comment text */
 			if ( $row->page_namespace == NS_IMAGE && $wgResourcesDirectFileLinks ) {
@@ -248,6 +249,7 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 				$row->page_len, $row->rev_timestamp );
 			$sortkey = $targetTitle->getSubpageText() . '/' .
 				$targetTitle->getBaseText() . ':' . $targetTitle->getNsText();
+			$sortkey = $this->makeSortkeySafe( $sortkey );
 			
 			$result[$sortkey] = array( $link, $comment );
 		}
@@ -314,6 +316,7 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 			$sortkey = ucfirst( $targetTitle->getSubpageText() ) . '/' .
 				$targetTitle->getBaseText() . ':' .
 				$targetTitle->getNsText();
+			$sortkey = $this->makeSortkeySafe( $sortkey ); # fixes üöä...
 
 			$result[$sortkey] = array( $link, $linkInfo );
 		}
@@ -373,6 +376,19 @@ var wgDiscussionTabText = \"" . wfMsg('talk') . "\";
 			$result = $catPage->formatList( $catPage->articles, $catPage->articles_start_char );
 
 		return $result;
+	}
+
+	/**
+	 * replaces äöüÄÖÜ with ae/oe/etc.
+	 */
+	function makeSortkeySafe( $string ) {
+		$string = str_replace( 'ä', 'ae', $string );
+		$string = str_replace( 'ö', 'oe', $string );
+		$string = str_replace( 'ü', 'ue', $string );
+		$string = str_replace( 'Ä', 'Ae', $string );
+		$string = str_replace( 'Ö', 'Oe', $string );
+		$string = str_replace( 'Ü', 'Ue', $string );
+		return $string;
 	}
 
 	/**
