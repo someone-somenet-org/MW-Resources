@@ -92,7 +92,7 @@ class Resources extends SpecialPage {
 		$dbr =& wfGetDB( DB_READ );
 		$prefix = $title->getPrefixedText() . ' - ';
 		/* copied from SpecialUpload::processUpload(): */
-                $prefix = preg_replace ( "/[^" . Title::legalChars() . "]|:/", '-', $prefix );
+                $prefix = preg_replace ( "/[^" . Title::legalChars() . "]|:|\//", '-', $prefix );
 		$result = array ();
 
 		// Make the query
