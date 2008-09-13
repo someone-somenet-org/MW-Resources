@@ -21,7 +21,7 @@ $wgHooks['BeforePageDisplay'][] = 'efResourcesTabCSS';
 $wgExtensionCredits['specialpage'][] = array (
 	'name' => 'Resources',
 	'description' => 'Displays resources attached to an article (with the AddResource extension)',
-	'version' => '1.2-1.12.0',
+	'version' => '1.2.1-1.13.1',
 	'author' => 'Mathias Ertl',
 	'url' => 'http://pluto.htu.tuwien.ac.at/devel_wiki/Resources',
 );
@@ -104,7 +104,7 @@ function efResourcesDisplayTab( $tabs ) {
 				'class' => false,
 				'text' => wfMsg('addResourceTab'),
 				'href' => $page->getLocalURL() . '/' .
-					$parTitle->getPrefixedText()
+					$parTitle->getPrefixedDBkey()
 			);
 		}
 
@@ -137,7 +137,7 @@ function efResourcesDisplayTab( $tabs ) {
 		$mainTabs['view-resources'] = array( 'class' => false,
 			'text' => wfMsg( 'resourcesTab' ),
 			'href' => $specialPage->getLocalURL() . '/' .
-				$title->getPrefixedText() );
+				$title->getPrefixedDBkey() );
 		
 		/* get number of resources (and redden link if 0) */
 		$resourcesPage = new Resources();
