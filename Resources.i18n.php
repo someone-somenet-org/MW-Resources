@@ -18,6 +18,8 @@ $messages = array(
 		'fileComment' => '$1, $2',
 		'fileCommentWithDetails' => '$1, $2 ($3)',
 		'subpage' => 'Subpage',
+		'specialpages-specialpagegroup-resources' => 'resources',
+		'specialpages-group-resources' => 'Resources',
 	),
 	'de' => array(
 		'resources' => 'Materialien',
@@ -39,6 +41,8 @@ $messages = array(
 		'fileComment' => '$1, $2',
 		'fileCommentWithDetails' => '$1, $2 ($3)',
 		'subpage' => 'Unterseite',
+		'specialpages-specialpagegroup-resources' => 'resources',
+		'specialpages-group-resources' => 'Materialien',
 	)
 );
 ?>
