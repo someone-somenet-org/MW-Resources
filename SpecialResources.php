@@ -172,7 +172,7 @@ class Resources extends SpecialPage {
 			// the sortkey is suffixed with the NS in case we have articles with same name
 			$targetTitle = Title::makeTitleSafe( NS_IMAGE, $row->page_title );
 			$displayTitle = str_replace( $prefix, '', $targetTitle->getText() );
-			$sortkey = $displayTitle . " - " . $prefix . ":" . $row->page_namespace;
+			$sortkey = $displayTitle . ":" . $row->page_id;
 			$sortkey = $this->makeSortkeySafe( $sortkey );
 	
 			/* create link and comment text */
@@ -233,7 +233,7 @@ class Resources extends SpecialPage {
 			$dbr->freeResult( $res );
 			return $count;
 		} else {
-			$fields = array( 'page_namespace', 'page_title', 'page_len', 'rev_timestamp' );
+			$fields = array( 'page_id', 'page_namespace', 'page_title', 'page_len', 'rev_timestamp' );
 			$res = $dbr->select( array('page', 'revision'), $fields, 
 				$db_conditions );
 		}
@@ -248,7 +248,7 @@ class Resources extends SpecialPage {
 			$comment = $this->createPageComment( wfMsg('subpage'),
 				$row->page_len, $row->rev_timestamp );
 			$sortkey = $targetTitle->getSubpageText() . '/' .
-				$targetTitle->getBaseText() . ':' . $targetTitle->getNsText();
+				$targetTitle->getBaseText() . ':' . $row->page_id;
 			$sortkey = $this->makeSortkeySafe( $sortkey );
 			
 			$result[$sortkey] = array( $link, $comment );
@@ -284,7 +284,7 @@ class Resources extends SpecialPage {
 			'page_is_redirect=1',
 			'page_latest=rev_id',
 			'rev_text_id=old_id',
-			'old_text REGEXP \'^#REDIRECT \\\\[\\\\[(' . implode( "|", $wgExternalRedirectProtocols )  . ')://\'',
+			'old_text REGEXP \'^#REDIRECT \\\\[\\\\[(' . implode( "|", $wgExternalRedirectProtocols )  . ')://\'', // NOTE: This is case insensitive (mysql regex...)
 		);
 		if ( $count ) {
 			$fields = array( 'count(*) as count' );
@@ -293,7 +293,7 @@ class Resources extends SpecialPage {
 			$dbr->freeResult( $res );
 			return $count;
 		} else {
-			$fields = array( 'page_namespace', 'page_title', 'old_text' );
+			$fields = array( 'page_id', 'page_namespace', 'page_title', 'old_text' );
 			$res = $dbr->select( $tables, $fields, $condis );
 		}
 
@@ -313,9 +313,8 @@ class Resources extends SpecialPage {
 					$target, $targetTitle->getSubpageText() );
 			$linkInfo = $targetInfo . ' (' . $skin->makeKnownLink( $targetTitle->getPrefixedText(),
 					wfMsg('redirect_link_view'), 'redirect=no') . ')';
-			$sortkey = ucfirst( $targetTitle->getSubpageText() ) . '/' .
-				$targetTitle->getBaseText() . ':' .
-				$targetTitle->getNsText();
+			$sortkey = ucfirst( $targetTitle->getSubpageText() ) . ':' .
+				$row->page_id;
 			$sortkey = $this->makeSortkeySafe( $sortkey ); # fixes üöä...
 			
 			$result[$sortkey] = array( $link, $linkInfo );
