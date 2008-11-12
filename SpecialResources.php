@@ -185,11 +185,11 @@ class Resources extends SpecialPage {
 				$link = $skin->makeMediaLinkObj( $targetTitle, $displayTitle );
 				$detailLink = $skin->makeSizeLinkObj(
 					$row->page_len, $targetTitle, wfMsg( 'details' ) );
-				$comment = wfMsg ( 'fileCommentWithDetails', $size, $fileArticle->getMimeType(), $detailLink );
+				$comment = '<br />' . wfMsg ( 'fileCommentWithDetails', $size, $fileArticle->getMimeType(), $detailLink );
 			} else {
 				$link = $skin->makeSizeLinkObj(
 					$row->page_len, $targetTitle, $displayTitle );
-				$comment = wfMsg( 'fileComment', $size, $fileArticle->getMimeType() );
+				$comment = '<br />' . wfMsg( 'fileComment', $size, $fileArticle->getMimeType() );
 			}
 			$result[$sortkey] = array ( $link, $comment );
 		}
@@ -311,8 +311,14 @@ class Resources extends SpecialPage {
 			
 			$link = $skin->makeExternalLink(
 					$target, $targetTitle->getSubpageText() );
-			$linkInfo = $targetInfo . ' (' . $skin->makeKnownLink( $targetTitle->getPrefixedText(),
+			if ( $targetInfo ) {
+				$linkInfo = '<br />' . $targetInfo . ' (' . $skin->makeKnownLink( $targetTitle->getPrefixedText(),
+						wfMsg('redirect_link_view'), 'redirect=no') . ')';
+			} else {
+				$linkInfo = ' (' . $skin->makeKnownLink( $targetTitle->getPrefixedText(),
 					wfMsg('redirect_link_view'), 'redirect=no') . ')';
+			}
+
 			$sortkey = ucfirst( $targetTitle->getSubpageText() ) . ':' .
 				$row->page_id;
 			$sortkey = $this->makeSortkeySafe( $sortkey ); # fixes üöä...
@@ -366,7 +372,7 @@ class Resources extends SpecialPage {
 		foreach ( $this->resourceList as $sortkey=>$value) {
 			$catPage->articles_start_char[] = $wgContLang->convert( $wgContLang->firstChar( $sortkey ) );
 			if ( $wgResourcesAddInfos ) {
-				$catPage->articles[] = $value[0] . '<br />' . $value[1];
+				$catPage->articles[] = $value[0] . $value[1];
 			} else {
 				$catPage->articles[] = $value[0];
 			}
@@ -411,7 +417,7 @@ class Resources extends SpecialPage {
 			$time['tm_year'] + 1900 );
 		$lastChange = date( 'Y-m-d H:i', $timestamp );
 
-		return wfMsg( 'pageComment', $info, $length, $lastChange) ;
+		return '<br />' . wfMsg( 'pageComment', $info, $length, $lastChange) ;
 	}
 
 	/**
