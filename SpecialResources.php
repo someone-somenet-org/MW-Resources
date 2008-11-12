@@ -56,6 +56,20 @@ class Resources extends SpecialPage {
 
 		$wgOut->addWikiText( $this->printHeader() );
 		$wgOut->addHTML( $this->makeList() );
+		
+/*		$wgOut->addWikiText( "=== the whole thing ===" );
+		foreach( array( 1,2,3,4,5,6,7,8,9,10 ) as $counter ) {
+			$starttime = explode(' ', microtime());
+			
+			$this->getResourceList( $this->title );
+
+			$endtime = explode(' ', microtime());
+			$total_time = $endtime[0] + $endtime[1] - ($starttime[1] + $starttime[0]);
+			$total_time = round($total_time * 1000);
+			$wgOut->addWikiText( "* $counter: $total_time" );
+		}
+		print $this->getResourceListCount( $this->title );
+*/		
 	}
 
 	/** 
@@ -70,16 +84,36 @@ class Resources extends SpecialPage {
 		$resourceList = array();
 
 		/* add the list of pages linking here, if desired */
-		if ( $wgResourcesShowPages or $wgResourcesShowPages == NULL ) 
+		if ( $wgResourcesShowPages !== FALSE ) 
 			$resourceList = array_merge( $resourceList, $this->getFiles( $title ) );
 		/* add the list of subpages, if desired */
-		if ( $wgResourcesShowSubpages or $wgResourcesShowSubpages == NULL )
+		if ( $wgResourcesShowSubpages !== FALSE )
 			$resourceList = array_merge( $resourceList, $this->getSubpages( $title ) );
 		/* add a list of foreign links (requires ExternalRedirects extension) */
 		if ( $wgEnableExternalRedirects and
-			( $wgResourcesShowLinks or $wgResourcesShowLinks == NULL ) )
+			( $wgResourcesShowLinks !== FALSE ) )
 			$resourceList = array_merge( $resourceList, $this->getLinks( $title ) );
 		return $resourceList;
+	}
+
+	/**
+	 * function used by SimilarNamedArticles to print the number of
+	 * resources for the given title.
+	 * @param title Article for that we want the number of resources
+	 * @return int the number of resources for the article.
+	 */
+	function getResourceListCount( $title ) {
+		global $wgResourcesShowPages, $wgResourcesShowSubpages, $wgResourcesShowLinks;
+		$count = 0;
+		
+		if ( $wgResourcesShowPages !== FALSE )
+			$count += $this->getFiles( $title, TRUE );
+		if ( $wgResourcesShowSubpages !== FALSE )
+			$count += $this->getSubpages( $title, TRUE );
+		if ( $wgResourcesShowLinks !== FALSE ) 
+			$count += $this->getLinks( $title, TRUE );
+		
+		return $count;
 	}
 
 	/**
@@ -87,106 +121,77 @@ class Resources extends SpecialPage {
 	 * is a modified version of the algorithm used in Special:Whatlinkshere
 	 * @return array with the structure:
 	 *		[0] => array( $sortkey => ($link, $second_line) )
+	 *	or int if $count == True
 	 */
-	function getFiles( $title ) {
+	function getFiles( $title, $count = FALSE ) {
+		global $wgSkin, $wgContLang, $wgUser, $wgLegalTitleChars,
+			$wgResourcesNamespaces, $wgResourcesDirectFileLinks;
+		$skin = $wgUser->getSkin();
 		$dbr =& wfGetDB( DB_READ );
-		$prefix = $title->getPrefixedText() . ' - ';
+		
 		/* copied from SpecialUpload::processUpload(): */
-                $prefix = preg_replace ( "/[^" . Title::legalChars() . "]|:|\//", '-', $prefix );
+                $prefix = preg_replace ( "/[^" . $wgLegalTitleChars . "]|:|\//", '-', 
+			$title->getPrefixedText() . ' - ' );
 		$result = array ();
 
 		// Make the query
 		$plConds = array(
-				'page_id=pl_from',
-				'pl_namespace' => $title->getNamespace(),
-				'pl_title' => $title->getDBkey(),
-				'page_latest=rev_id',
-				);
-
-		$tlConds = array(
-				'page_id=tl_from',
-				'tl_namespace' => $title->getNamespace(),
-				'tl_title' => $title->getDBkey(),
-				'page_latest=rev_id',
-				);
-
-		// Read an extra row as an at-end check
-		$queryLimit = $limit + 1;
-		$options['LIMIT'] = $queryLimit;
-		if ( $offsetCond ) {
-			$tlConds[] = $offsetCond;
-			$plConds[] = $offsetCond;
-		}
-		$fields = array( 'page_id', 'page_namespace', 'page_title', 'page_is_redirect', 'page_len', 'rev_timestamp' );
-		$plRes = $dbr->select( array( 'pagelinks', 'page', 'revision' ), $fields,
-				$plConds, $fname );
-		$tlRes = $dbr->select( array( 'templatelinks', 'page', 'revision' ), $fields,
-				$tlConds, $fname );
-		if ( !$dbr->numRows( $plRes ) && !$dbr->numRows( $tlRes ) ) {
-			return array();
+			'page_id=pl_from',
+			'pl_namespace' => $title->getNamespace(),
+			'pl_title' => $title->getDBkey(),
+			'page_latest=rev_id',
+			'page_namespace=' . NS_IMAGE,
+		);
+		if ( $count ) {
+			$fields = array( 'count(*) as count' );
+			$plRes = $dbr->select( array( 'pagelinks', 'page', 'revision' ), $fields,
+				$plConds );
+			$count = $dbr->fetchObject( $plRes )->count;
+			$dbr->freeResult( $plRes );
+			return $count;
+		} else {
+			$fields = array( 'page_id', 'page_title', 'page_len', 'rev_timestamp' );
+			$plRes = $dbr->select( array( 'pagelinks', 'page', 'revision' ), $fields,
+				$plConds );
+			if ( !$dbr->numRows( $plRes ) ) {
+				return array(); // found nothing
+			}
 		}
 
 		// Read the rows into an array and remove duplicates
-		// templatelinks comes second so that the templatelinks row overwrites the
-		// pagelinks row, so we get (inclusion) rather than nothing
 		while ( $row = $dbr->fetchObject( $plRes ) ) {
-			$row->is_template = 0;
 			$rows[$row->page_id] = $row;
 		}
 		$dbr->freeResult( $plRes );
-		while ( $row = $dbr->fetchObject( $tlRes ) ) {
-			$row->is_template = 1;
-			$rows[$row->page_id] = $row;
-		}
-		$dbr->freeResult( $tlRes );
 
 		// change the keys to 0-based indices
 		$rows = array_values( $rows );
-		$numRows = count( $rows );
 
-		global $wgSkin, $wgContLang, $wgUser;
-		global $wgResourcesNamespaces, $wgResourcesDirectFileLinks;
-		$skin = $wgUser->getSkin();
-//		print_r($_SERVER);
+		// process result:
 		foreach ( $rows as $row ) {
-			if ( $row->page_namespace != 6 ) 
-				continue; /* TODO! */
-
-			$targetTitle = Title::makeTitleSafe( $row->page_namespace, $row->page_title );
-			$pageLength = $row->page_len;
-
 			// the sortkey is suffixed with the NS in case we have articles with same name
+			$targetTitle = Title::makeTitleSafe( NS_IMAGE, $row->page_title );
 			$displayTitle = str_replace( $prefix, '', $targetTitle->getText() );
 			$sortkey = $displayTitle . " - " . $prefix . ":" . $row->page_namespace;
 			$sortkey = $this->makeSortkeySafe( $sortkey );
 	
 			/* create link and comment text */
-			if ( $row->page_namespace == NS_IMAGE && $wgResourcesDirectFileLinks ) {
+			$fileArticle = new Image( $targetTitle );
+			$size = $this->size_readable( $fileArticle->getSize(), 'GB', '%01.0f %s' );
+			
+			if ( $wgResourcesDirectFileLinks ) {
 				// this code is also used below in the else-statement
-				$fileArticle = new Image( $targetTitle );
 
 				$link = $skin->makeMediaLinkObj( $targetTitle, $displayTitle );
-				$size = $this->size_readable( $fileArticle->getSize(), 'GB', '%01.0f %s' );
 				$detailLink = $skin->makeSizeLinkObj(
-					$pageLength, $targetTitle, wfMsg( 'details' ) );
+					$row->page_len, $targetTitle, wfMsg( 'details' ) );
 				$comment = wfMsg ( 'fileCommentWithDetails', $size, $fileArticle->getMimeType(), $detailLink );
 			} else {
 				$link = $skin->makeSizeLinkObj(
-					$pageLength, $targetTitle, $displayTitle );
-				/* FileArticles still get a special treatment to print the size etc. */
-				if ( $row->page_namespace == NS_IMAGE ) {
-					// this code is also used above!
-					$fileArticle = new Image( $targetTitle );
-					$size = $this->size_readable( $fileArticle->getSize(), 'GB', '%01.0f %s' );
-					$comment = wfMsg( 'fileComment', $size, $fileArticle->getMimeType() );
-				} else {
-					$comment = $this->createPageComment( $targetTitle->getNsText(),
-							$row->page_len, $row->rev_timestamp );
-				}
+					$row->page_len, $targetTitle, $displayTitle );
+				$comment = wfMsg( 'fileComment', $size, $fileArticle->getMimeType() );
 			}
-
 			$result[$sortkey] = array ( $link, $comment );
-
 		}
 		return $result;
 	}
@@ -195,36 +200,44 @@ class Resources extends SpecialPage {
 	 * get a list of Subpages for $title. This function is a modfied
 	 * version of the algorithm of Special:Prefixindex.
 	 * @param title The title of the page we want the subpages of
+	 * @param count If we only want the number of results
 	 * @return array with the structure:
 	 *		[0] => array( $sortkey => ( $link, $linkInfo ) )
+	 *	or int if $count == True
 	 */
-	function getSubpages( $title ) {
-		global $wgUser;
-		global $wgResourcesSubpagesIncludeRedirects;
+	function getSubpages( $title, $count = FALSE ) {
+		global $wgUser, $wgResourcesSubpagesIncludeRedirects;
 		$skin = $wgUser->getSkin();
+		$dbr = wfGetDB( DB_SLAVE );
 		$result = array ();
 		$prefix = $title->getPrefixedDBkey() . '/';
-		$fname = 'Resources::getSubpages';
 
 		/* make a query */
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
 		list( $namespace, $prefixKey, $prefix ) = $prefixList;
 
-		$dbr = wfGetDB( DB_SLAVE );
 		$db_conditions = array(
 				'page_namespace' => $namespace,
 				'page_title LIKE \'' . $dbr->escapeLike( $prefixKey ) .'%\'',
 				'page_title >= ' . $dbr->addQuotes( $prefixKey ),
 				'page_latest=rev_id',
-				);
+		);
 		if ( $wgResourcesSubpagesIncludeRedirects == false )
-			$db_conditions = array_merge( $db_conditions, array('page_is_redirect=0'));
+			$db_conditions[] = 'page_is_redirect=0';
 
-		$res = $dbr->select( array('page', 'revision'),
-				array( 'page_namespace', 'page_title', 'page_len', 'rev_timestamp' ),
-				$db_conditions,
-				$fname
-				);
+		if ( $count ) {
+			$fields = array( 'count(*) as count' );
+			$res = $dbr->select( array('page', 'revision'), $fields, 
+				$db_conditions );
+			$count = $dbr->fetchObject( $res )->count;
+			$dbr->freeResult( $res );
+			return $count;
+		} else {
+			$fields = array( 'page_namespace', 'page_title', 'page_len', 'rev_timestamp' );
+			$res = $dbr->select( array('page', 'revision'), $fields, 
+				$db_conditions );
+		}
+
 
 		/* use the results of the query */
 		while ( $row = $dbr->fetchObject( $res ) ) {
@@ -240,6 +253,7 @@ class Resources extends SpecialPage {
 			
 			$result[$sortkey] = array( $link, $comment );
 		}
+		$dbr->freeResult( $res );
 		return $result;
 	}
 
@@ -247,54 +261,54 @@ class Resources extends SpecialPage {
 	 * get a list of ExternalRedirects for $title. The algorithm we use here is
 	 * a modified version of the algorithm used in Special:Prefixindex. We
 	 * @param title the title we get the external redirects for
+	 * @param count If we only want the number of results
 	 * @return array with the structure:
 	 *		[0] => array( $sortkey => ( $link, $linkInfo )
+	 *	or int if $count == True
 	 */
-	function getLinks( $title ) {
-		global $IP, $wgUser;
+	function getLinks( $title, $count = False ) {
+		global $IP, $wgUser, $wgExternalRedirectProtocols;
 		$skin = $wgUser->getSkin();
 		$result = array();
+		$dbr = wfGetDB( DB_SLAVE );
 
 		/* make the query */
 		$prefix = $title->getPrefixedDBkey() . "/";
-		$fname = 'Resources::getLinks';
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
 		list( $namespace, $prefixKey, $prefix ) = $prefixList;
 
-		$dbr = wfGetDB( DB_SLAVE );
-		$res = $dbr->select( 'page',
-				array( 'page_namespace', 'page_title' ),
-				array( 'page_namespace' => $namespace,
-					'page_title LIKE \'' . $dbr->escapeLike( $prefixKey ) .'%\'',
-					'page_title >= ' . $dbr->addQuotes( $prefixKey ),
-					'page_is_redirect=1'
-				     ),
-				$fname,
-				array(
-					'ORDER BY'  => 'page_title',
-					'USE INDEX' => 'name_title',
-				     )
-				);
+		$tables = array( 'page', 'revision', 'text' );
+		$condis = array(
+			'page_namespace' => $namespace,
+			'page_title LIKE \'' . $dbr->escapeLike( $prefixKey ) . '%\'',
+			'page_is_redirect=1',
+			'page_latest=rev_id',
+			'rev_text_id=old_id',
+			'old_text REGEXP \'^#REDIRECT \\\\[\\\\[(' . implode( "|", $wgExternalRedirectProtocols )  . ')://\'',
+		);
+		if ( $count ) {
+			$fields = array( 'count(*) as count' );
+			$res = $dbr->select( $tables, $fields, $condis );
+			$count = $dbr->fetchObject( $res )->count;
+			$dbr->freeResult( $res );
+			return $count;
+		} else {
+			$fields = array( 'page_namespace', 'page_title', 'old_text' );
+			$res = $dbr->select( $tables, $fields, $condis );
+		}
 
 		/* use the results */
 		while ( $row = $dbr->fetchObject( $res ) ) {
+
+			list($num, $target, $targetInfo) = getTargetInfo( $row->old_text );
+			if ($num == 0) {
+				print "WARNING: This was not an External Redirect. Please notify Admins!";
+				continue; // not an external redirect (should not happen because of neat regexp in sql-query)
+			}
+			
 			$targetTitle = Title::makeTitleSafe( $row->page_namespace, $row->page_title );
-
-			/* fetch content of found article */
-			$targetArticle = new Article( $targetTitle ); /* create article obj */
-			$data = $targetArticle->pageDataFromTitle( $dbr, $targetTitle ); /* get some data */
-			$targetArticle->loadPageData( $data ); /* save that data (i.e. mLatest from next line */
-			$revision = Revision::newFromId( $targetArticle->mLatest ); /* create a revision */
-			/* finally get some text from that revision */
-			$targetArticle->mContent = $revision->userCan( Revision::DELETED_TEXT ) ? $revision->getRawText() : "";
-			
-			/* parse content of found article (see ExternalRedirect.php) */
-			list($num, $target, $targetInfo) = getTargetInfo( $targetArticle );
-			if ($num == 0) 
-				continue; // not an external redirect
-			
 			$targetInfo = Sanitizer::removeHTMLtags( $targetInfo ); //remove dangerous HTML tags
-
+			
 			$link = $skin->makeExternalLink(
 					$target, $targetTitle->getSubpageText() );
 			$linkInfo = $targetInfo . ' (' . $skin->makeKnownLink( $targetTitle->getPrefixedText(),
@@ -303,9 +317,10 @@ class Resources extends SpecialPage {
 				$targetTitle->getBaseText() . ':' .
 				$targetTitle->getNsText();
 			$sortkey = $this->makeSortkeySafe( $sortkey ); # fixes üöä...
-
+			
 			$result[$sortkey] = array( $link, $linkInfo );
 		}
+		$dbr->freeResult( $res );
 		return $result;
 	}
 
@@ -318,8 +333,8 @@ class Resources extends SpecialPage {
 	 */
 	function printHeader() {
 		global $wgUser;
-		$count = count( $this->resourceList );
 		$skin = $wgUser->getSkin();
+		$count = count( $this->resourceList );
 		$titleText = $this->title->getFullText();
 		$r = "<div id=\"mw-pages\">\n";
 		$addResourceText = SpecialPage::getTitleFor( 'AddResource' );
@@ -375,31 +390,6 @@ class Resources extends SpecialPage {
 		$string = str_replace( 'Ö', 'Oe', $string );
 		$string = str_replace( 'Ü', 'Ue', $string );
 		return $string;
-	}
-
-	/**
-	 * function used by SimilarNamedArticles to print the number of
-	 * resources for the given title.
-	 * @param title Article for that we want the number of resources
-	 * @return int the number of resources for the article.
-	 */
-	public function getResourceListCount( $title ) {
-		global $wgResourcesShowPages, $wgResourcesShowSubpages, $wgResourcesShowLinks;
-		// variables from foreign extensions:
-		global $wgEnableExternalRedirects;
-		$resourceList = array();
-
-		/* add the list of pages linking here, if desired */
-		if ( $wgResourcesShowPages or $wgResourcesShowPages == NULL ) 
-			$resourceList = array_merge( $resourceList, $this->getFiles( $title ) );
-		/* add the list of subpages, if desired */
-		if ( $wgResourcesShowSubpages or $wgResourcesShowSubpages == NULL )
-			$resourceList = array_merge( $resourceList, $this->getSubpages( $title ) );
-		/* add a list of foreign links (requires ExternalRedirects extension) */
-		if ( $wgEnableExternalRedirects and
-			( $wgResourcesShowLinks or $wgResourcesShowLinks == NULL ) )
-			$resourceList = array_merge( $resourceList, $this->getLinks( $title ) );
-		return count($resourceList);
 	}
 
 	/**
