@@ -211,6 +211,7 @@ class Resources extends SpecialPage {
 		$dbr = wfGetDB( DB_SLAVE );
 		$result = array ();
 		$prefix = $title->getPrefixedDBkey() . '/';
+		$namespace = 0; // magic key :-(
 
 		/* make a query */
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
@@ -274,6 +275,7 @@ class Resources extends SpecialPage {
 
 		/* make the query */
 		$prefix = $title->getPrefixedDBkey() . "/";
+		$namespace = 0; //magic key :-(
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
 		list( $namespace, $prefixKey, $prefix ) = $prefixList;
 
