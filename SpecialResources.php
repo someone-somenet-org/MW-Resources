@@ -220,6 +220,7 @@ class Resources extends SpecialPage {
 		$db_conditions = array(
 				'page_namespace' => $namespace,
 				'page_title LIKE \'' . $dbr->escapeLike( $prefixKey ) .'%\'',
+				'page_title REGEXP \'^' . $prefixKey . '[^/]+$\'',
 				'page_title >= ' . $dbr->addQuotes( $prefixKey ),
 				'page_latest=rev_id',
 		);
@@ -242,6 +243,7 @@ class Resources extends SpecialPage {
 
 		/* use the results of the query */
 		while ( $row = $dbr->fetchObject( $res ) ) {
+			print $row->page_title . "; ";
 			$targetTitle = Title::makeTitleSafe( $row->page_namespace, $row->page_title );
 
 			$link = $skin->makeSizeLinkObj(
