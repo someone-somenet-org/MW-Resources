@@ -217,10 +217,13 @@ class Resources extends SpecialPage {
 		$prefixList = SpecialAllpages::getNamespaceKeyAndText($namespace, $prefix);
 		list( $namespace, $prefixKey, $prefix ) = $prefixList;
 
+		$regexpPrefix = str_replace( '(', '\\\\(', $prefixKey );
+		$regexpPrefix = str_replace( ')', '\\\\)', $regexpPrefix );
+
 		$db_conditions = array(
 				'page_namespace' => $namespace,
 				'page_title LIKE \'' . $dbr->escapeLike( $prefixKey ) .'%\'',
-				'page_title REGEXP \'^' . $prefixKey . '[^/]+$\'',
+				'page_title REGEXP \'^' . $regexpPrefix . '[^/]+$\'',
 				'page_title >= ' . $dbr->addQuotes( $prefixKey ),
 				'page_latest=rev_id',
 		);
@@ -243,7 +246,6 @@ class Resources extends SpecialPage {
 
 		/* use the results of the query */
 		while ( $row = $dbr->fetchObject( $res ) ) {
-			print $row->page_title . "; ";
 			$targetTitle = Title::makeTitleSafe( $row->page_namespace, $row->page_title );
 
 			$link = $skin->makeSizeLinkObj(
