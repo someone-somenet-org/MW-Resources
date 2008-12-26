@@ -48,6 +48,9 @@ $messages = array(
 		'subpage' => 'Unterseite',
 		'specialpages-specialpagegroup-resources' => 'resources',
 		'specialpages-group-resources' => 'Materialien',
+		'redirects_header' => '
+== Alte Lehrveranstaltungen ==',
+		'redirects_explanation' => 'Einige andere Lehrveranstaltungen leiten auf diese Lehrveranstaltung weiter, diese LVAs enthalten moeglicherweise ebenfalls interessante Materialien:',
 		'redirect_element_main' => '* [[$1]] ([[$2/$1|Materialien]])',
 		'redirect_element' => '* [[$1:$2|$2]] ([[$3/$1:$2|Materialien]])',
 	)
