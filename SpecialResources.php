@@ -98,11 +98,12 @@ class Resources extends SpecialPage {
 			# implode this later and addWikiText as a whole because otherwise
 			# each <li> would be its own <ul> :-(
 			$namespace = $nt->getNsText();
+			$title = $nt->getText();
 			$resourceTitleText = SpecialPage::getTitleFor( 'Resources' );
-			if ( $namespace == NS_MAIN ) { # this is only to not have a : for the main namespace
-				$list[] = wfMsg( 'redirect_element_main', $row->page_title, $resourceTitleText );
+			if ( $row->page_namespace == NS_MAIN ) { # this is only to not have a : for the main namespace
+				$list[] = wfMsg( 'redirect_element_main', $title, $resourceTitleText );
 			} else {
-				$list[] = wfMsg( 'redirect_element', $namespace, $row->page_title, $resourceTitleText );
+				$list[] = wfMsg( 'redirect_element', $namespace, $title, $resourceTitleText );
 			}
 
                 }
