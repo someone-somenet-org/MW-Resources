@@ -21,7 +21,7 @@ $wgHooks['BeforePageDisplay'][] = 'efResourcesTabCSS';
 $wgExtensionCredits['specialpage'][] = array (
 	'name' => 'Resources',
 	'description' => 'Displays resources attached to an article (with the AddResource extension)',
-	'version' => '1.3.1-1.13.1',
+	'version' => '1.4-1.13.1',
 	'author' => 'Mathias Ertl',
 	'url' => 'http://pluto.htu.tuwien.ac.at/devel_wiki/Resources',
 );

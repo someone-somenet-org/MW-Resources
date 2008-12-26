@@ -20,6 +20,11 @@ $messages = array(
 		'subpage' => 'Subpage',
 		'specialpages-specialpagegroup-resources' => 'resources',
 		'specialpages-group-resources' => 'Resources',
+		'redirects_header' => '
+== Redirects ==',
+		'redirects_explanation' => 'The following pages also redirect here and might also contain interesting resources:',
+		'redirect_element_main' => '* [[$1]] ([[$2/$1|Resources]])',
+		'redirect_element' => '* [[$1:$2|$2]] ([[$3/$1:$2|Resources]])',
 	),
 	'de' => array(
 		'resources' => 'Materialien',
@@ -43,6 +48,8 @@ $messages = array(
 		'subpage' => 'Unterseite',
 		'specialpages-specialpagegroup-resources' => 'resources',
 		'specialpages-group-resources' => 'Materialien',
+		'redirect_element_main' => '* [[$1]] ([[$2/$1|Materialien]])',
+		'redirect_element' => '* [[$1:$2|$2]] ([[$3/$1:$2|Materialien]])',
 	)
 );
 ?>

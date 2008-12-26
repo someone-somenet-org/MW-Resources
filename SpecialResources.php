@@ -56,20 +56,57 @@ class Resources extends SpecialPage {
 
 		$wgOut->addWikiText( $this->printHeader() );
 		$wgOut->addHTML( $this->makeList() );
-		
-/*		$wgOut->addWikiText( "=== the whole thing ===" );
-		foreach( array( 1,2,3,4,5,6,7,8,9,10 ) as $counter ) {
-			$starttime = explode(' ', microtime());
-			
-			$this->getResourceList( $this->title );
 
-			$endtime = explode(' ', microtime());
-			$total_time = $endtime[0] + $endtime[1] - ($starttime[1] + $starttime[0]);
-			$total_time = round($total_time * 1000);
-			$wgOut->addWikiText( "* $counter: $total_time" );
+		$wgOut->addHTML( $this->makeRedirects() );
+	}
+
+	function makeRedirects() {
+		global $wgOut;
+		$dbr = wfGetDB( DB_SLAVE );
+		$title = $this->title;
+
+		$plConds = array(
+                        'page_id=pl_from',
+                        'pl_namespace' => $title->getNamespace(),
+                        'pl_title' => $title->getDBkey(),
+			'page_is_redirect' => 1,
+                );
+		$fields = array( 'page_id', 'page_namespace', 'page_title' );
+		$options[] = 'STRAIGHT_JOIN';
+		$options['ORDER BY'] = 'page_title';
+                
+		$plRes = $dbr->select( array( 'pagelinks', 'page' ), $fields,
+			$plConds, __METHOD__, $options );
+		
+		if ( $dbr->numRows( $plRes ) == 0 ) {
+			return;
 		}
-		print $this->getResourceListCount( $this->title );
-*/		
+
+		$wgOut->addWikiText( wfMsg( 'redirects_header' ) );
+		$wgOut->addWikiText( wfMsg( 'redirects_explanation' ) );
+
+		while ( $row = $dbr->fetchObject( $plRes ) ) {
+                                $rows[$row->page_id] = $row;
+                }
+                $dbr->freeResult( $plRes );
+		
+		ksort( $rows );
+                $rows = array_values( $rows );
+
+		foreach ( $rows as $row ) {
+                        $nt = Title::makeTitle( $row->page_namespace, $row->page_title );
+			# implode this later and addWikiText as a whole because otherwise
+			# each <li> would be its own <ul> :-(
+			$namespace = $nt->getNsText();
+			$resourceTitleText = SpecialPage::getTitleFor( 'Resources' );
+			if ( $namespace == NS_MAIN ) { # this is only to not have a : for the main namespace
+				$list[] = wfMsg( 'redirect_element_main', $row->page_title, $resourceTitleText );
+			} else {
+				$list[] = wfMsg( 'redirect_element', $namespace, $row->page_title, $resourceTitleText );
+			}
+
+                }
+		$wgOut->addWikiText( implode( $list, "\n" ) );
 	}
 
 	/** 
