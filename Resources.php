@@ -16,12 +16,11 @@ $wgSpecialPages[ 'Resources' ] = 'Resources';
 $wgHooks['LanguageGetSpecialPageAliases'][] = 'efResourcesLocalizedPageName';
 
 $wgHooks['SkinTemplateContentActions'][] = 'efResourcesDisplayTab';
-$wgHooks['BeforePageDisplay'][] = 'efResourcesTabCSS';
 
 $wgExtensionCredits['specialpage'][] = array (
 	'name' => 'Resources',
 	'description' => 'Displays resources attached to an article (with the AddResource extension)',
-	'version' => '1.4-1.13.1',
+	'version' => '1.4.1-1.13.1',
 	'author' => 'Mathias Ertl',
 	'url' => 'http://pluto.htu.tuwien.ac.at/devel_wiki/Resources',
 );
@@ -37,19 +36,6 @@ function efResourcesLocalizedPageName( &$specialPageArray, $code) {
 	$specialPageArray['Resources'][] = $titleMain->getDBKey();
 	$specialPageArray['Resources'][] = $titleUser->getDBKey();
 
-	return true;
-}
-
-function efResourcesTabCSS( &$outputPage )  {
-	global $wgResourcesTabs, $wgScriptPath, $wgResourcesCSSpath;
-	if ( ! $wgResourcesTabs )
-		return true;
-
-	if ( ! $wgResourcesCSSpath )
-		$wgResourcesCSSpath = "$wgScriptPath/extensions/Resources";
-	$outputPage->addScript( '<style type="text/css">/*<![CDATA[*/
-		@import "' . $wgResourcesCSSpath . '/ResourcesTab.css";
-		</style>' );
 	return true;
 }
 
