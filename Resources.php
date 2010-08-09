@@ -115,7 +115,7 @@ $wgExtensionCredits['specialpage'][] = array (
 	'description' => 'Displays resources attached to an article (with the AddResource extension)',
 	'version' => '1.5.0-1.13.1',
 	'author' => 'Mathias Ertl',
-	'url' => 'http://pluto.htu.tuwien.ac.at/devel_wiki/Resources',
+	'url' => 'http://fs.fsinf.at/wiki/Resources',
 );
 
 function efResourcesLocalizedPageName( &$specialPageArray, $code) {
