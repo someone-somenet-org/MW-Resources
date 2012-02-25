@@ -208,28 +208,25 @@ class Resources extends SpecialPage {
 		// process result:
 		foreach ( $rows as $row ) {
 			// the sortkey is suffixed with the NS in case we have articles with same name
-			$targetTitle = Title::makeTitleSafe( NS_IMAGE, $row->page_title );
+			$targetTitle = Title::makeTitleSafe( NS_FILE, $row->page_title );
 			$displayTitle = str_replace( $prefix, '', $targetTitle->getText() );
 			$sortkey = $displayTitle . ":" . $row->page_id;
 			$sortkey = $this->makeSortkeySafe( $sortkey );
 	
 			/* create link and comment text */
-			$fileArticle = new Image( $targetTitle );
+			#$fileArticle = new Image( $targetTitle );
+			#$fileArticle = LocalFile::newFromTitle($targetTitle);
+			$fileArticle = wfLocalFile($targetTitle);
 			$size = $this->size_readable( $fileArticle->getSize(), 'GB', '%01.0f %s' );
 			
+			$link = Linker::makeMediaLinkFile($targetTitle, $fileArticle, $displayTitle);
 			if ( $wgResourcesDirectFileLinks ) {
-				// this code is also used below in the else-statement
-
-				$link = $skin->makeMediaLinkObj( $targetTitle, $displayTitle );
-				$detailLink = $skin->makeSizeLinkObj(
-					$row->page_len, $targetTitle, wfMsg( 'details' ) );
+				$detailLink = $skin->link($targetTitle, wfMsg('details'));
 				$comment = '<br />' . wfMsg ( 'fileCommentWithDetails', $size, $fileArticle->getMimeType(), $detailLink );
 			} else {
-				$link = $skin->makeSizeLinkObj(
-					$row->page_len, $targetTitle, $displayTitle );
 				$comment = '<br />' . wfMsg( 'fileComment', $size, $fileArticle->getMimeType() );
 			}
-			$result[$sortkey] = array ( $link, $comment );
+			$result[ucfirst($sortkey)] = array ( $link, $comment );
 		}
 		return $result;
 	}
@@ -287,15 +284,14 @@ class Resources extends SpecialPage {
 		while ( $row = $dbr->fetchObject( $res ) ) {
 			$targetTitle = Title::makeTitleSafe( $row->page_namespace, $row->page_title );
 
-			$link = $skin->makeSizeLinkObj(
-				$pageLength, $targetTitle, $targetTitle->getSubpageText() );
+			$link = $skin->link($targetTitle, $targetTitle->getSubpageText());
 			$comment = $this->createPageComment( wfMsg('subpage'),
 				$row->page_len, $row->rev_timestamp );
 			$sortkey = $targetTitle->getSubpageText() . '/' .
 				$targetTitle->getBaseText() . ':' . $row->page_id;
 			$sortkey = $this->makeSortkeySafe( $sortkey );
 			
-			$result[$sortkey] = array( $link, $comment );
+			$result[ucfirst($sortkey)] = array( $link, $comment );
 		}
 		$dbr->freeResult( $res );
 		return $result;
@@ -358,13 +354,16 @@ class Resources extends SpecialPage {
 			
 			$link = $skin->makeExternalLink(
 					$target, $targetTitle->getSubpageText() );
+			$linkInfo = '';
 			if ( $targetInfo ) {
-				$linkInfo = '<br />' . $targetInfo . ' (' . $skin->makeKnownLink( $targetTitle->getPrefixedText(),
-						wfMsg('redirect_link_view'), 'redirect=no') . ')';
-			} else {
-				$linkInfo = ' (' . $skin->makeKnownLink( $targetTitle->getPrefixedText(),
-					wfMsg('redirect_link_view'), 'redirect=no') . ')';
+				$linkInfo .= '<br />' . $targetInfo;
 			}
+			$linkInfo .= ' (' . $skin->link(
+				$targetTitle,
+				wfMsg('redirect_link_view'),
+				array(), 
+				array('redirect' => 'no')
+			) . ')';
 
 			$sortkey = ucfirst( $targetTitle->getSubpageText() ) . ':' .
 				$row->page_id;
@@ -410,7 +409,6 @@ class Resources extends SpecialPage {
 		global $wgTitle, $wgContLang, $wgCanonicalNamespaceNames;
 		global $wgResourcesAddInfos;
 		$catPage = new CategoryViewer( $wgTitle );
-		$skin = $catPage->getSkin();
 		ksort( $this->resourceList );
 		
 		// this emulates CategoryViewer::getHTML(): 
