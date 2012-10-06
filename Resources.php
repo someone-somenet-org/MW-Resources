@@ -66,10 +66,10 @@ function efResourcesSpecialPage( $template, $links ) {
  */
 function efResourcesNormalPages( $template, $links ) {
 	global $wgResourcesNamespaces, $wgResourcesTabs, $wgTitle;
-	if ( ! $wgResourcesTabs ) 
+	if ( ! $wgResourcesTabs )
 		return true;
 	$ns = $wgTitle->getNamespace();
-	
+
 	if ( ! ( in_array( $ns, $wgResourcesNamespaces ) ||
 			in_array( $ns - 1, $wgResourcesNamespaces ) ) )
 		return true; /* admin doesn't want tab here */
@@ -89,11 +89,11 @@ function efResourcesNormalPages( $template, $links ) {
 	} else {
 		$text = wfMsg( 'resourcesTab' );
 	}
-	
+
 	$namespaces = $links['namespaces'];
 	$namespace_key = array_keys( $namespaces );
 
-	$resourcesTab = array( 
+	$resourcesTab = array(
 		$namespace_key[0] . '_resources' => array(
 			'class' => $class,
 			'text' => $text,
@@ -101,7 +101,7 @@ function efResourcesNormalPages( $template, $links ) {
 			'context' => 'resources',
 		)
 	);
-	
+
 	# build array:
 	$head = array_slice( $namespaces, 0, 1 );
 	$tail = array_slice( $namespaces, 1 );
@@ -113,7 +113,7 @@ function efResourcesNormalPages( $template, $links ) {
 $wgExtensionCredits['specialpage'][] = array (
 	'name' => 'Resources',
 	'description' => 'Displays resources attached to an article (with the AddResource extension)',
-	'version' => '1.5.0-1.13.1',
+	'version' => '1.5.1',
 	'author' => 'Mathias Ertl',
 	'url' => 'http://fs.fsinf.at/wiki/Resources',
 );
@@ -137,10 +137,10 @@ function efResourcesLocalizedPageName( &$specialPageArray, $code) {
  */
 function efResourcesDisplayTab( $tabs ) {
 	global $wgResourcesTabs, $wgTitle;
-	if ( ! $wgResourcesTabs ) 
+	if ( ! $wgResourcesTabs )
 		return true;
 	$ns = $wgTitle->getNamespace();
-	
+
 	if ( $ns == -1 ) {
 		/* we are on a special page */
 		$curSpecialPage = $wgTitle->getPrefixedText();
@@ -172,7 +172,7 @@ function efResourcesDisplayTab( $tabs ) {
 		$customTabs['view-resources'] = array ( 'class' => 'selected',
 			'text' => wfMsg('resourcesTab'),
 			$tabs['nstab-special']['href'] );
-		
+
 		/* get number of resources (and redden link if 0) */
 		$resourcesPage = new Resources();
 		$resourcesCount = $resourcesPage->getResourceListCount( $parTitle );
@@ -182,7 +182,7 @@ function efResourcesDisplayTab( $tabs ) {
 		// display add-resources tab, if requested
 		if ( $wgAddResourceTab ) {
 			$page = SpecialPage::getTitleFor( 'AddResource' );
-			$customTabs['add-resources'] = array ( 
+			$customTabs['add-resources'] = array (
 				'class' => false,
 				'text' => wfMsg('addResourceTab'),
 				'href' => $page->getLocalURL() . '/' .
@@ -214,7 +214,7 @@ function efResourcesDisplayTab( $tabs ) {
 		}
 		if ( $titleBase->exists() )
 			$title = $titleBase;
-		
+
 		/* get number of resources (and redden link if 0) */
 		$resourcePage = new Resources();
 		$resourceCount = $resourcePage->getResourceListCount( $title );
@@ -225,7 +225,7 @@ function efResourcesDisplayTab( $tabs ) {
 			$tabText = wfMsg( 'resourcesTab' );
 			$class = 'new';
 		}
-		
+
 		$specialPage = SpecialPage::getTitleFor( 'Resources' );
 		$mainTabs['view-resources'] = array( 'class' => false,
 			'text' => $tabText,
@@ -233,7 +233,7 @@ function efResourcesDisplayTab( $tabs ) {
 				$title->getPrefixedDBkey(),
 			'class' => $class,
 		);
-		
+
 		$tabs = array_merge( $mainTabs, $tabs );
 	}
 
