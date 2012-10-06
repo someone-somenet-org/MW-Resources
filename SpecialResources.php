@@ -16,7 +16,7 @@ class Resources extends SpecialPage {
 		SpecialPage::SpecialPage( 'Resources' );
 		wfLoadExtensionMessages('Resources');
 	}
-	
+
 	/**
 	 * main worker-function...
 	 * @param par the part after the '/' from the HTTP-Request
@@ -38,20 +38,20 @@ class Resources extends SpecialPage {
 			if ( $wgResourcesCategory ) {
 				$wgOut->addWikiText( "<dpl>
 				mode=category
-				resultsheader=" . wfMsg('header_allResources') . 
+				resultsheader=" . wfMsg('header_allResources') .
 				"\noneresultheader=" . wfMsg('header_allResourcesOne') .
-				"\nnoresultsheader=" . wfMsg('header_allResourcesNone') . 
+				"\nnoresultsheader=" . wfMsg('header_allResourcesNone') .
 				"\nredirects=include
 				ordermethod=titlewithoutnamespace
 				shownamespace=false
-				category=" . $wgResourcesCategory . 
+				category=" . $wgResourcesCategory .
 				"</dpl>" );
 				$wgOut->setPagetitle( wfMsg( 'title_allResources' ) );
-			} else 
+			} else
 				$wgOut->addWikiText( wfMsg('no_page_specified') );
 			return;
 		}
-		
+
 		$this->resourceList = $this->getResourceList( $this->title );
 
 		$wgOut->addWikiText( $this->printHeader() );
@@ -74,10 +74,10 @@ class Resources extends SpecialPage {
 		$fields = array( 'page_id', 'page_namespace', 'page_title' );
 		$options[] = 'STRAIGHT_JOIN';
 		$options['ORDER BY'] = 'page_title';
-                
+
 		$plRes = $dbr->select( array( 'pagelinks', 'page' ), $fields,
 			$plConds, __METHOD__, $options );
-		
+
 		if ( $dbr->numRows( $plRes ) == 0 ) {
 			return;
 		}
@@ -89,7 +89,7 @@ class Resources extends SpecialPage {
                                 $rows[$row->page_id] = $row;
                 }
                 $dbr->freeResult( $plRes );
-		
+
 		ksort( $rows );
                 $rows = array_values( $rows );
 
@@ -110,7 +110,7 @@ class Resources extends SpecialPage {
 		$wgOut->addWikiText( implode( $list, "\n" ) );
 	}
 
-	/** 
+	/**
 	 * generate a list of resources for a given title
 	 * @param title The title we want to build the list for
 	 * @return a list containing the pages
@@ -122,7 +122,7 @@ class Resources extends SpecialPage {
 		$resourceList = array();
 
 		/* add the list of pages linking here, if desired */
-		if ( $wgResourcesShowPages !== FALSE ) 
+		if ( $wgResourcesShowPages !== FALSE )
 			$resourceList = array_merge( $resourceList, $this->getFiles( $title ) );
 		/* add the list of subpages, if desired */
 		if ( $wgResourcesShowSubpages !== FALSE )
@@ -143,14 +143,14 @@ class Resources extends SpecialPage {
 	function getResourceListCount( $title ) {
 		global $wgResourcesShowPages, $wgResourcesShowSubpages, $wgResourcesShowLinks;
 		$count = 0;
-		
+
 		if ( $wgResourcesShowPages !== FALSE )
 			$count += $this->getFiles( $title, TRUE );
 		if ( $wgResourcesShowSubpages !== FALSE )
 			$count += $this->getSubpages( $title, TRUE );
-		if ( $wgResourcesShowLinks !== FALSE ) 
+		if ( $wgResourcesShowLinks !== FALSE )
 			$count += $this->getLinks( $title, TRUE );
-		
+
 		return $count;
 	}
 
@@ -166,9 +166,9 @@ class Resources extends SpecialPage {
 			$wgResourcesNamespaces, $wgResourcesDirectFileLinks;
 		$skin = $wgUser->getSkin();
 		$dbr =& wfGetDB( DB_READ );
-		
+
 		/* copied from SpecialUpload::processUpload(): */
-                $prefix = preg_replace ( "/[^" . $wgLegalTitleChars . "]|:|\//", '-', 
+                $prefix = preg_replace ( "/[^" . $wgLegalTitleChars . "]|:|\//", '-',
 			$title->getPrefixedText() . ' - ' );
 		$result = array ();
 
@@ -212,13 +212,13 @@ class Resources extends SpecialPage {
 			$displayTitle = str_replace( $prefix, '', $targetTitle->getText() );
 			$sortkey = $displayTitle . ":" . $row->page_id;
 			$sortkey = $this->makeSortkeySafe( $sortkey );
-	
+
 			/* create link and comment text */
 			#$fileArticle = new Image( $targetTitle );
 			#$fileArticle = LocalFile::newFromTitle($targetTitle);
 			$fileArticle = wfLocalFile($targetTitle);
 			$size = $this->size_readable( $fileArticle->getSize(), 'GB', '%01.0f %s' );
-			
+
 			$link = Linker::makeMediaLinkFile($targetTitle, $fileArticle, $displayTitle);
 			if ( $wgResourcesDirectFileLinks ) {
 				$detailLink = $skin->link($targetTitle, wfMsg('details'));
@@ -268,14 +268,14 @@ class Resources extends SpecialPage {
 
 		if ( $count ) {
 			$fields = array( 'count(*) as count' );
-			$res = $dbr->select( array('page', 'revision'), $fields, 
+			$res = $dbr->select( array('page', 'revision'), $fields,
 				$db_conditions );
 			$count = $dbr->fetchObject( $res )->count;
 			$dbr->freeResult( $res );
 			return $count;
 		} else {
 			$fields = array( 'page_id', 'page_namespace', 'page_title', 'page_len', 'rev_timestamp' );
-			$res = $dbr->select( array('page', 'revision'), $fields, 
+			$res = $dbr->select( array('page', 'revision'), $fields,
 				$db_conditions );
 		}
 
@@ -290,7 +290,7 @@ class Resources extends SpecialPage {
 			$sortkey = $targetTitle->getSubpageText() . '/' .
 				$targetTitle->getBaseText() . ':' . $row->page_id;
 			$sortkey = $this->makeSortkeySafe( $sortkey );
-			
+
 			$result[ucfirst($sortkey)] = array( $link, $comment );
 		}
 		$dbr->freeResult( $res );
@@ -348,10 +348,10 @@ class Resources extends SpecialPage {
 				print "WARNING: This was not an External Redirect. Please notify Admins!";
 				continue; // not an external redirect (should not happen because of neat regexp in sql-query)
 			}
-			
+
 			$targetTitle = Title::makeTitleSafe( $row->page_namespace, $row->page_title );
 			$targetInfo = Sanitizer::removeHTMLtags( $targetInfo ); //remove dangerous HTML tags
-			
+
 			$link = $skin->makeExternalLink(
 					$target, $targetTitle->getSubpageText() );
 			$linkInfo = '';
@@ -361,14 +361,14 @@ class Resources extends SpecialPage {
 			$linkInfo .= ' (' . $skin->link(
 				$targetTitle,
 				wfMsg('redirect_link_view'),
-				array(), 
+				array(),
 				array('redirect' => 'no')
 			) . ')';
 
 			$sortkey = ucfirst( $targetTitle->getSubpageText() ) . ':' .
 				$row->page_id;
 			$sortkey = $this->makeSortkeySafe( $sortkey ); # fixes üöä...
-			
+
 			$result[$sortkey] = array( $link, $linkInfo );
 		}
 		$dbr->freeResult( $res );
@@ -376,7 +376,7 @@ class Resources extends SpecialPage {
 	}
 
 	/**
-	 * constructs the header printed above the actual list of found 
+	 * constructs the header printed above the actual list of found
 	 * resources. This includes the <h1> as well as the "There are
 	 * currently..."
 	 * @return string - apart from the div-tags (which are not interpreted
@@ -397,7 +397,7 @@ class Resources extends SpecialPage {
 			$r .= wfMsg( 'header_text_none', $titleText, $addResourceText );
 		}
 		$r .= "</div>";
-		return $r;	
+		return $r;
 	}
 
 	/**
@@ -408,10 +408,10 @@ class Resources extends SpecialPage {
 	function makeList() {
 		global $wgTitle, $wgContLang, $wgCanonicalNamespaceNames;
 		global $wgResourcesAddInfos;
-		$catPage = new CategoryViewer( $wgTitle );
+		$catPage = new CategoryViewer( $wgTitle, $this->getContext() );
 		ksort( $this->resourceList );
-		
-		// this emulates CategoryViewer::getHTML(): 
+
+		// this emulates CategoryViewer::getHTML():
 		$catPage->clearCategoryState();
 		// populate:
 		foreach ( $this->resourceList as $sortkey=>$value) {
@@ -422,7 +422,7 @@ class Resources extends SpecialPage {
 				$catPage->articles[] = $value[0];
 			}
 		}
-		
+
 		if( count( $catPage->articles ) > 0 )
 			$result = $catPage->formatList( $catPage->articles, $catPage->articles_start_char );
 
@@ -454,11 +454,11 @@ class Resources extends SpecialPage {
 	private function createPageComment( $info, $length, $timestamp ) {
 		/* parse timestamp */
 		$time = strptime( $timestamp, '%Y%m%d%H%M%S' );
-		$timestamp = mktime( $time['tm_hour'], 
+		$timestamp = mktime( $time['tm_hour'],
 			$time['tm_min'],
 			$time['tm_sec'],
 			1,
-			$time['tm_yday'] + 1, 
+			$time['tm_yday'] + 1,
 			$time['tm_year'] + 1900 );
 		$lastChange = date( 'Y-m-d H:i', $timestamp );
 
@@ -466,7 +466,7 @@ class Resources extends SpecialPage {
 	}
 
 	/**
-	 * Return human readable sizes 
+	 * Return human readable sizes
 	 *
 	 * @author	  Aidan Lister <aidan@php.net>
 	 * @version     1.1.0
@@ -486,25 +486,25 @@ class Resources extends SpecialPage {
 			$mod   = 1024;
 		}
 		$ii = count($sizes) - 1;
- 
+
 		// Max unit
 		$unit = array_search((string) $unit, $sizes);
 		if ($unit === null || $unit === false) {
 			$unit = $ii;
 		}
- 
+
 		// Return string
 		if ($retstring === null) {
 			$retstring = '%01.2f %s';
 		}
- 
+
 		// Loop
 		$i = 0;
 		while ($unit != $i && $size >= 1024 && $i < $ii) {
 			$size /= $mod;
 			$i++;
 		}
- 
+
 		return sprintf($retstring, $size, $sizes[$i]);
 	}
 
