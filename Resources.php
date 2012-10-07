@@ -15,46 +15,80 @@ $wgExtensionMessagesFiles['Resources'] = $dir . '/Resources.i18n.php';
 $wgSpecialPages[ 'Resources' ] = 'Resources';
 $wgHooks['LanguageGetSpecialPageAliases'][] = 'efResourcesLocalizedPageName';
 
-$wgHooks['SkinTemplateContentActions'][] = 'efResourcesDisplayTab'; # for monobook
-$wgHooks['SkinTemplateNavigation'][] = 'efResourcesNormalPages'; # for vector - just on normal pages
+$wgHooks['SkinTemplateNavigation'][] = 'efResourcesNormalPages';
+$wgHooks['SkinTemplateNavigation::SpecialPage'][] = 'efResourcesSpecialPage';
+
+function getResourceCount($title) {
+	$resourcePage = new Resources();
+	return $resourcePage->getResourceListCount($title);
+}
+
+function getResourceTabText($resourceCount) {
+	if ($resourceCount > 0) {
+		return wfMsg('resourcesTabExists', $resourceCount);
+	} else {
+		return wfMsg('resourcesTab');
+	}
+}
+
+function getAddResourceUrl($title) {
+	$addResource = SpecialPage::getTitleFor('AddResource');
+	return $addResource->getLocalURL() .'/'. $title->getPrefixedDBkey();
+}
 
 /**
  * this function is not currently used and is only here for future reference
  */
 function efResourcesSpecialPage( $template, $links ) {
-	global $wgTitle;
-
-	/* we are on a special page */
-	$curSpecialPage = $wgTitle->getPrefixedText();
+	global $wgTitle, $wgRequest, $wgUser, $wgAddResourceTab;
 
 	// return if we are not on the right special page
-	if ( $curSpecialPage != SpecialPage::getTitleFor( 'Resources' ) )
-		return true;
+    if (!$wgTitle->isSpecial('Resources')) {
+        return true;
+    }
 
-	// get parameter for special page:
-	global $wgRequest, $wgUser, $wgAddResourceTab;
-	$reqTitle = $wgRequest->getVal('title');
-	$par = preg_replace('/' . $curSpecialPage . '\/?/', '', $reqTitle );
-	if ( $par == '' ) // if no /par was given
-		return true;
-	$parTitle = Title::newFromText( $par )->getSubjectPage();
-	$parTalkTitle = $parTitle->getTalkPage();
+    // parse subpage-part. We cannot use $wgTitle->getSubpage() because the
+    // special namespaces doesn't have real subpages
+    $prefixedText = $wgTitle->getPrefixedText();
+    if (strpos($prefixedText, '/') === FALSE) {
+        return true; // no page given
+    }
+    $parts = explode( '/', $prefixedText);
+    $pageName = $parts[count( $parts ) - 1];
+
+	$title = Title::newFromText($pageName)->getSubjectPage();
+    $talkTitle = $title->getTalkPage();
+
+    // Get AddResource URL:
+    $addResourceUrl = getAddResourceUrl($title);
 
 	$head = array (
-		$parTitle->getNamespaceKey('') => array(
-			'class' => $parTitle->exists() ? null : 'new',
-			'text' => $parTitle->getNsText(),
-			'href' => '/href', // todo
+		$title->getNamespaceKey('') => array(
+			'class' => $title->exists() ? null : 'new',
+			'text' => $title->getText(),
+			'href' => $title->getLocalUrl(),
 		)
 	);
-	$tail = array (
-		$parTitle->getNamespaceKey('') . '_talk' => array(
-			'class' => $parTalkTitle->exists() ? null : 'new',
-			'text' => $parTalkTitle->getNsText(),
-			'href' => '/href', // todo
+    $tail = array (
+        'add_resources' => array(
+            'class' => '',
+            'text' => '+',
+            'href' => $addResourceUrl,
+        ),
+
+		$title->getNamespaceKey('') . '_talk' => array(
+			'class' => $talkTitle->exists() ? null : 'new',
+			'text' => wfMsg('Talk'),
+			'href' => $talkTitle->getLocalUrl(),
 		)
-	);
-	$links = array_merge( $head, $links, $tail );
+    );
+    $resourceCount = getResourceCount($title);
+
+    $links['namespaces'] = array_merge($head, $links['namespaces'], $tail);
+    $links['namespaces']['special']['text'] = getResourceTabText($resourceCount);
+    if ($resourceCount == 0) {
+        $links['namespaces']['special']['class'] = 'new';
+    }
 
 	return true;
 }
@@ -67,39 +101,42 @@ function efResourcesSpecialPage( $template, $links ) {
 function efResourcesNormalPages( $template, $links ) {
 	global $wgResourcesNamespaces, $wgResourcesTabs, $wgTitle;
 	if ( ! $wgResourcesTabs )
-		return true;
-	$ns = $wgTitle->getNamespace();
+        return true;
+    $title = $wgTitle->getSubjectPage();
+	$ns = $title->getNamespace();
 
-	if ( ! ( in_array( $ns, $wgResourcesNamespaces ) ||
-			in_array( $ns - 1, $wgResourcesNamespaces ) ) )
-		return true; /* admin doesn't want tab here */
+	if (! in_array( $ns, $wgResourcesNamespaces )) {
+        return true; /* admin doesn't want tab here */
+    }
 
-	# get class for resources tab:
-	$resourcePage = new Resources();
-	$resourceCount = $resourcePage->getResourceListCount( $wgTitle );
+    # get class for resources tab:
+    $resourceCount = getResourceCount($title);
 	$class = $resourceCount > 0 ? null : 'new';
 
 	# get link target:
 	$resources = SpecialPage::getTitleFor( 'Resources' );
-	$target = $resources->getLocalURL() .'/'. $wgTitle->getPrefixedDBkey();
+	$target = $resources->getLocalURL() .'/'. $title->getPrefixedDBkey();
 
-	# resource tab text:
-	if ( $resourceCount > 0 ) {
-		$text = wfMsg( 'resourcesTabExists', $resourceCount );
-	} else {
-		$text = wfMsg( 'resourcesTab' );
-	}
+    # resource tab text:
+    $text = getResourceTabText($resourceCount);
 
 	$namespaces = $links['namespaces'];
 	$namespace_key = array_keys( $namespaces );
+
+    // Get AddResources URL:
+    $addResourceUrl = getAddResourceUrl($title);
 
 	$resourcesTab = array(
 		$namespace_key[0] . '_resources' => array(
 			'class' => $class,
 			'text' => $text,
 			'href' => $target,
-			'context' => 'resources',
-		)
+        ),
+        $namespace_key[0] . '_addresources' => array(
+			'class' => '',
+			'text' => '+',
+			'href' => $addResourceUrl,
+        ),
 	);
 
 	# build array:
@@ -128,114 +165,6 @@ function efResourcesLocalizedPageName( &$specialPageArray, $code) {
 	$titleUser = Title::newFromText( $textUser );
 	$specialPageArray['Resources'][] = $titleMain->getDBKey();
 	$specialPageArray['Resources'][] = $titleUser->getDBKey();
-
-	return true;
-}
-
-/**
- * Add Tabs for Skins like monobook
- */
-function efResourcesDisplayTab( $tabs ) {
-	global $wgResourcesTabs, $wgTitle;
-	if ( ! $wgResourcesTabs )
-		return true;
-	$ns = $wgTitle->getNamespace();
-
-	if ( $ns == -1 ) {
-		/* we are on a special page */
-		$curSpecialPage = $wgTitle->getPrefixedText();
-
-		// return if we are not on the right special page
-		if ( $curSpecialPage != SpecialPage::getTitleFor( 'Resources' ) )
-			return true;
-
-		// get $par:
-		global $wgRequest, $wgUser, $wgAddResourceTab;
-		$reqTitle = $wgRequest->getVal('title');
-		$par = preg_replace('/' . $curSpecialPage . '\/?/', '', $reqTitle );
-		if ( $par == '' ) // if no /par was given
-			return true;
-		$parTitle = Title::newFromText( $par )->getSubjectPage();
-		$parTalkTitle = $parTitle->getTalkPage();
-
-		/* build tabs */
-		$skin = $wgUser->getSkin();
-		$nskey = $parTitle->getNamespaceKey();
-
-		// subject page and talk page:
-		$customTabs[$nskey] = $skin->tabAction(
-			$parTitle, $nskey, false, '', true);
-		$customTabs['talk'] = $skin->tabAction(
-			$parTalkTitle, 'talk', false, '', true);
-
-		// downloads-tab:
-		$customTabs['view-resources'] = array ( 'class' => 'selected',
-			'text' => wfMsg('resourcesTab'),
-			$tabs['nstab-special']['href'] );
-
-		/* get number of resources (and redden link if 0) */
-		$resourcesPage = new Resources();
-		$resourcesCount = $resourcesPage->getResourceListCount( $parTitle );
-		if ( ! $resourcesCount )
-			$customTabs['view-resources']['class'] .= ' new';
-
-		// display add-resources tab, if requested
-		if ( $wgAddResourceTab ) {
-			$page = SpecialPage::getTitleFor( 'AddResource' );
-			$customTabs['add-resources'] = array (
-				'class' => false,
-				'text' => wfMsg('addResourceTab'),
-				'href' => $page->getLocalURL() . '/' .
-					$parTitle->getPrefixedDBkey()
-			);
-		}
-
-		$tabs = $customTabs;
-	} else {
-		/* subject/talk page */
-		global $wgResourcesNamespaces;
-		if ( ! ( in_array( $ns, $wgResourcesNamespaces ) ||
-				in_array( $ns - 1, $wgResourcesNamespaces ) ) )
-			return true; /* user doesn't want tab here */
-		$mainTabs = array_slice ( $tabs, 0, 2, true );
-		$secondaryTabs = array_splice( $tabs, 0, 2 );
-		$title = $wgTitle->getSubjectPage();
-		$titleBase = Title::newFromText( $title->getBaseText(),
-			$title->getNamespace() );
-
-		// this is in case we are on a sub-subpage, we want
-		// the top-most page, i.e. 'article' from 'article/sub/sub':
-		while ( $titleBase->isSubPage() ) {
-			$titleBase = Title::newFromText( $titleBase->getBaseText(),
-				$title->getNamespace() );
-
-			if ( $titleBase->exists() )
-				$title = $titleBase;
-		}
-		if ( $titleBase->exists() )
-			$title = $titleBase;
-
-		/* get number of resources (and redden link if 0) */
-		$resourcePage = new Resources();
-		$resourceCount = $resourcePage->getResourceListCount( $title );
-		if ( $resourceCount > 0 ) {
-			$tabText = wfMsg( 'resourcesTabExists', $resourceCount );
-			$class = null;
-		} else {
-			$tabText = wfMsg( 'resourcesTab' );
-			$class = 'new';
-		}
-
-		$specialPage = SpecialPage::getTitleFor( 'Resources' );
-		$mainTabs['view-resources'] = array( 'class' => false,
-			'text' => $tabText,
-			'href' => $specialPage->getLocalURL() . '/' .
-				$title->getPrefixedDBkey(),
-			'class' => $class,
-		);
-
-		$tabs = array_merge( $mainTabs, $tabs );
-	}
 
 	return true;
 }
