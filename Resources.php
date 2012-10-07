@@ -64,7 +64,7 @@ function efResourcesSpecialPage( $template, $links ) {
 
 	$head = array (
 		$title->getNamespaceKey('') => array(
-			'class' => $title->exists() ? null : 'new',
+			'class' => $title->exists() ? 'is_resources' : 'new is_resources',
 			'text' => $title->getText(),
 			'href' => $title->getLocalUrl(),
 		)
@@ -87,7 +87,9 @@ function efResourcesSpecialPage( $template, $links ) {
     $links['namespaces'] = array_merge($head, $links['namespaces'], $tail);
     $links['namespaces']['special']['text'] = getResourceTabText($resourceCount);
     if ($resourceCount == 0) {
-        $links['namespaces']['special']['class'] = 'new';
+        $links['namespaces']['special']['class'] = 'new is_resources';
+    } else {
+        $links['namespaces']['special']['class'] = 'is_resources';
     }
 
 	return true;
@@ -111,7 +113,7 @@ function efResourcesNormalPages( $template, $links ) {
 
     # get class for resources tab:
     $resourceCount = getResourceCount($title);
-	$class = $resourceCount > 0 ? null : 'new';
+	$class = $resourceCount > 0 ? 'is_resources' : 'new is_resources';
 
 	# get link target:
 	$resources = SpecialPage::getTitleFor( 'Resources' );
