@@ -151,7 +151,7 @@ $wgExtensionCredits['specialpage'][] = array (
     'path' => __file__,
     'name' => 'Resources',
     'description' => 'Displays resources attached to an article (with the AddResource extension)',
-    'version' => '1.5.2-1.21.0',
+    'version' => '1.5.3-1.21.0',
     'author' => 'Mathias Ertl',
     'url' => 'http://fs.fsinf.at/wiki/Resources',
 );
