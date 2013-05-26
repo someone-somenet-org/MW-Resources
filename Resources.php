@@ -8,10 +8,8 @@ EOT;
 	exit( 1 );
 }
 
-$dir = dirname(__FILE__);
-
-$wgAutoloadClasses['Resources'] = $dir . '/SpecialResources.php';
-$wgExtensionMessagesFiles['Resources'] = $dir . '/Resources.i18n.php';
+$wgAutoloadClasses['Resources'] = __DIR__ . '/SpecialResources.php';
+$wgExtensionMessagesFiles['Resources'] = __DIR__ . '/Resources.i18n.php';
 $wgSpecialPages[ 'Resources' ] = 'Resources';
 $wgHooks['LanguageGetSpecialPageAliases'][] = 'efResourcesLocalizedPageName';
 
