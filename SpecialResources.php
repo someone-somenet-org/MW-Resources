@@ -254,7 +254,7 @@ class SpecialResources extends SpecialPage {
 
         $db_conditions = array(
                 'page_namespace' => $namespace,
-                'page_title LIKE \'' . $dbr->escapeLike( $prefixKey ) .'%\'',
+                'page_title ' . $dbr->buildLike($prefixKey),
                 'page_title REGEXP \'^' . $regexpPrefix . '[^/]+$\'',
                 'page_title >= ' . $dbr->addQuotes( $prefixKey ),
                 'page_latest=rev_id',
@@ -319,7 +319,7 @@ class SpecialResources extends SpecialPage {
         $tables = array( 'page', 'revision', 'text' );
         $condis = array(
             'page_namespace' => $namespace,
-            'page_title LIKE \'' . $dbr->escapeLike( $prefixKey ) . '%\'',
+            'page_title ' . $dbr->buildLike($prefixKey),
             'page_is_redirect=1',
             'page_latest=rev_id',
             'rev_text_id=old_id',
