@@ -320,21 +320,21 @@ class SpecialResources extends SpecialPage {
         $tables = array( 'page', 'revision', 'text' );
         $condis = array(
             'page_namespace' => $namespace,
-            'page_title ' . $dbr->buildLike($prefixKey),
+            'page_title ' . $dbr->buildLike($prefixKey, $dbr->anyString()),
             'page_is_redirect=1',
             'page_latest=rev_id',
             'rev_text_id=old_id',
             'old_text REGEXP \'^#REDIRECT \\\\[\\\\[(' . implode( "|", $wgExternalRedirectProtocols )  . ')://\'', // NOTE: This is case insensitive (mysql regex...)
         );
-        if ( $count ) {
-            $fields = array( 'count(*) as count' );
-            $res = $dbr->select( $tables, $fields, $condis );
-            $count = $dbr->fetchObject( $res )->count;
-            $dbr->freeResult( $res );
+        if ($count) {
+            $fields = array('count(*) as count');
+            $res = $dbr->select($tables, $fields, $condis);
+            $count = $dbr->fetchObject($res)->count;
+            $dbr->freeResult($res);
             return $count;
         } else {
-            $fields = array( 'page_id', 'page_namespace', 'page_title', 'old_text' );
-            $res = $dbr->select( $tables, $fields, $condis );
+            $fields = array('page_id', 'page_namespace', 'page_title', 'old_text');
+            $res = $dbr->select($tables, $fields, $condis);
         }
 
         /* use the results */
