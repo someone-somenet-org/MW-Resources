@@ -12,7 +12,6 @@ $wgAutoloadClasses['Resources'] = __DIR__ . '/SpecialResources.php';
 $wgExtensionMessagesFiles['Resources'] = __DIR__ . '/Resources.i18n.php';
 $wgExtensionMessagesFiles['ResourcesAlias'] = __DIR__ . '/Resources.alias.php';
 $wgSpecialPages[ 'Resources' ] = 'SpecialResources';
-$wgHooks['LanguageGetSpecialPageAliases'][] = 'efResourcesLocalizedPageName';
 
 $wgHooks['SkinTemplateNavigation'][] = 'efResourcesNormalPages';
 $wgHooks['SkinTemplateNavigation::SpecialPage'][] = 'efResourcesSpecialPage';
@@ -155,19 +154,5 @@ $wgExtensionCredits['specialpage'][] = array (
 	'author' => 'Mathias Ertl',
 	'url' => 'http://fs.fsinf.at/wiki/Resources',
 );
-
-function efResourcesLocalizedPageName( &$specialPageArray, $code) {
-	wfLoadExtensionMessages('Resources');
-	$textMain = wfMsgForContent('resources');
-	$textUser = wfMsg('resources');
-
-	# Convert from title in text form to DBKey and put it into the alias array:
-	$titleMain = Title::newFromText( $textMain );
-	$titleUser = Title::newFromText( $textUser );
-	$specialPageArray['Resources'][] = $titleMain->getDBKey();
-	$specialPageArray['Resources'][] = $titleUser->getDBKey();
-
-	return true;
-}
 
 ?>
