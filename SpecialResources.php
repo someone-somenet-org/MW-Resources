@@ -138,14 +138,15 @@ class SpecialResources extends SpecialPage {
      */
     function getResourceListCount( $title ) {
         global $wgResourcesShowPages, $wgResourcesShowSubpages, $wgResourcesShowLinks;
+        global $wgEnableExternalRedirects;
         $count = 0;
 
-        if ( $wgResourcesShowPages !== FALSE )
-            $count += $this->getFiles( $title, TRUE );
-        if ( $wgResourcesShowSubpages !== FALSE )
-            $count += $this->getSubpages( $title, TRUE );
-        if ( $wgResourcesShowLinks !== FALSE )
-            $count += $this->getLinks( $title, TRUE );
+        if ($wgResourcesShowPages !== FALSE)
+            $count += $this->getFiles($title, TRUE);
+        if ($wgResourcesShowSubpages !== FALSE)
+            $count += $this->getSubpages($title, TRUE);
+        if ($wgResourcesShowLinks !== FALSE && $wgEnableExternalRedirects)
+            $count += $this->getLinks($title, TRUE);
 
         return $count;
     }
