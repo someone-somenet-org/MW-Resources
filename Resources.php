@@ -11,13 +11,13 @@ EOT;
 $wgAutoloadClasses['Resources'] = __DIR__ . '/SpecialResources.php';
 $wgExtensionMessagesFiles['Resources'] = __DIR__ . '/Resources.i18n.php';
 $wgExtensionMessagesFiles['ResourcesAlias'] = __DIR__ . '/Resources.alias.php';
-$wgSpecialPages[ 'Resources' ] = 'SpecialResources';
+$wgSpecialPages['Resources'] = 'SpecialResources';
 
 $wgHooks['SkinTemplateNavigation'][] = 'efResourcesNormalPages';
 $wgHooks['SkinTemplateNavigation::SpecialPage'][] = 'efResourcesSpecialPage';
 
 function getResourceCount($title) {
-    $resourcePage = new Resources();
+    $resourcePage = SpecialPageFactory::getPage('SpecialResources');
     return $resourcePage->getResourceListCount($title);
 }
 
