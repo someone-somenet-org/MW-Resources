@@ -1,11 +1,11 @@
 <?php
 # Not a valid entry point, skip unless MEDIAWIKI is defined
 if (!defined('MEDIAWIKI')) {
-	echo <<<EOT
+    echo <<<EOT
 To install my extension, put the following line in LocalSettings.php:
 require_once( "$IP/extensions/MyExtension/MyExtension.php" );
 EOT;
-	exit( 1 );
+    exit( 1 );
 }
 
 $wgAutoloadClasses['Resources'] = __DIR__ . '/SpecialResources.php';
@@ -17,30 +17,30 @@ $wgHooks['SkinTemplateNavigation'][] = 'efResourcesNormalPages';
 $wgHooks['SkinTemplateNavigation::SpecialPage'][] = 'efResourcesSpecialPage';
 
 function getResourceCount($title) {
-	$resourcePage = new Resources();
-	return $resourcePage->getResourceListCount($title);
+    $resourcePage = new Resources();
+    return $resourcePage->getResourceListCount($title);
 }
 
 function getResourceTabText($resourceCount) {
-	if ($resourceCount > 0) {
-		return wfMsg('resourcesTabExists', $resourceCount);
-	} else {
-		return wfMsg('resourcesTab');
-	}
+    if ($resourceCount > 0) {
+        return wfMsg('resourcesTabExists', $resourceCount);
+    } else {
+        return wfMsg('resourcesTab');
+    }
 }
 
 function getAddResourceUrl($title) {
-	$addResource = SpecialPage::getTitleFor('AddResource');
-	return $addResource->getLocalURL() .'/'. $title->getPrefixedDBkey();
+    $addResource = SpecialPage::getTitleFor('AddResource');
+    return $addResource->getLocalURL() .'/'. $title->getPrefixedDBkey();
 }
 
 /**
  * this function is not currently used and is only here for future reference
  */
 function efResourcesSpecialPage( $template, $links ) {
-	global $wgTitle, $wgRequest, $wgUser, $wgAddResourceTab;
+    global $wgTitle, $wgRequest, $wgUser, $wgAddResourceTab;
 
-	// return if we are not on the right special page
+    // return if we are not on the right special page
     if (!$wgTitle->isSpecial('Resources')) {
         return true;
     }
@@ -54,19 +54,19 @@ function efResourcesSpecialPage( $template, $links ) {
     $parts = explode( '/', $prefixedText);
     $pageName = $parts[count( $parts ) - 1];
 
-	$title = Title::newFromText($pageName)->getSubjectPage();
+    $title = Title::newFromText($pageName)->getSubjectPage();
     $talkTitle = $title->getTalkPage();
 
     // Get AddResource URL:
     $addResourceUrl = getAddResourceUrl($title);
 
-	$head = array (
-		$title->getNamespaceKey('') => array(
-			'class' => $title->exists() ? 'is_resources' : 'new is_resources',
-			'text' => $title->getText(),
-			'href' => $title->getLocalUrl(),
-		)
-	);
+    $head = array (
+        $title->getNamespaceKey('') => array(
+            'class' => $title->exists() ? 'is_resources' : 'new is_resources',
+            'text' => $title->getText(),
+            'href' => $title->getLocalUrl(),
+        )
+    );
     $tail = array (
         'add_resources' => array(
             'class' => '',
@@ -74,11 +74,11 @@ function efResourcesSpecialPage( $template, $links ) {
             'href' => $addResourceUrl,
         ),
 
-		$title->getNamespaceKey('') . '_talk' => array(
-			'class' => $talkTitle->exists() ? null : 'new',
-			'text' => wfMsg('Talk'),
-			'href' => $talkTitle->getLocalUrl(),
-		)
+        $title->getNamespaceKey('') . '_talk' => array(
+            'class' => $talkTitle->exists() ? null : 'new',
+            'text' => wfMsg('Talk'),
+            'href' => $talkTitle->getLocalUrl(),
+        )
     );
     $resourceCount = getResourceCount($title);
 
@@ -90,7 +90,7 @@ function efResourcesSpecialPage( $template, $links ) {
         $links['namespaces']['special']['class'] = 'is_resources';
     }
 
-	return true;
+    return true;
 }
 
 /**
@@ -99,60 +99,61 @@ function efResourcesSpecialPage( $template, $links ) {
  * the above function).
  */
 function efResourcesNormalPages( $template, $links ) {
-	global $wgResourcesNamespaces, $wgResourcesTabs, $wgTitle;
-	if ( ! $wgResourcesTabs )
+    global $wgResourcesNamespaces, $wgResourcesTabs, $wgTitle;
+    if ( ! $wgResourcesTabs )
         return true;
     $title = $wgTitle->getSubjectPage();
-	$ns = $title->getNamespace();
+    $ns = $title->getNamespace();
 
-	if (! in_array( $ns, $wgResourcesNamespaces )) {
+    if (! in_array( $ns, $wgResourcesNamespaces )) {
         return true; /* admin doesn't want tab here */
     }
 
     # get class for resources tab:
     $resourceCount = getResourceCount($title);
-	$class = $resourceCount > 0 ? 'is_resources' : 'new is_resources';
+    $class = $resourceCount > 0 ? 'is_resources' : 'new is_resources';
 
-	# get link target:
-	$resources = SpecialPage::getTitleFor( 'Resources' );
-	$target = $resources->getLocalURL() .'/'. $title->getPrefixedDBkey();
+    # get link target:
+    $resources = SpecialPage::getTitleFor( 'Resources' );
+    $target = $resources->getLocalURL() .'/'. $title->getPrefixedDBkey();
 
     # resource tab text:
     $text = getResourceTabText($resourceCount);
 
-	$namespaces = $links['namespaces'];
-	$namespace_key = array_keys( $namespaces );
+    $namespaces = $links['namespaces'];
+    $namespace_key = array_keys( $namespaces );
 
     // Get AddResources URL:
     $addResourceUrl = getAddResourceUrl($title);
 
-	$resourcesTab = array(
-		$namespace_key[0] . '_resources' => array(
-			'class' => $class,
-			'text' => $text,
-			'href' => $target,
+    $resourcesTab = array(
+        $namespace_key[0] . '_resources' => array(
+            'class' => $class,
+            'text' => $text,
+            'href' => $target,
         ),
         $namespace_key[0] . '_addresources' => array(
-			'class' => '',
-			'text' => '+',
-			'href' => $addResourceUrl,
+            'class' => '',
+            'text' => '+',
+            'href' => $addResourceUrl,
         ),
-	);
+    );
 
-	# build array:
-	$head = array_slice( $namespaces, 0, 1 );
-	$tail = array_slice( $namespaces, 1 );
-	$links['namespaces'] = array_merge( $head, $resourcesTab, $tail );
+    # build array:
+    $head = array_slice( $namespaces, 0, 1 );
+    $tail = array_slice( $namespaces, 1 );
+    $links['namespaces'] = array_merge( $head, $resourcesTab, $tail );
 
-	return true;
+    return true;
 }
 
 $wgExtensionCredits['specialpage'][] = array (
-	'name' => 'Resources',
-	'description' => 'Displays resources attached to an article (with the AddResource extension)',
-	'version' => '1.5.1',
-	'author' => 'Mathias Ertl',
-	'url' => 'http://fs.fsinf.at/wiki/Resources',
+    'path' => __file__,
+    'name' => 'Resources',
+    'description' => 'Displays resources attached to an article (with the AddResource extension)',
+    'version' => '1.5.1',
+    'author' => 'Mathias Ertl',
+    'url' => 'http://fs.fsinf.at/wiki/Resources',
 );
 
 ?>
