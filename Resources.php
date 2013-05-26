@@ -8,7 +8,7 @@ EOT;
     exit( 1 );
 }
 
-$wgAutoloadClasses['Resources'] = __DIR__ . '/SpecialResources.php';
+$wgAutoloadClasses['SpecialResources'] = __DIR__ . '/SpecialResources.php';
 $wgExtensionMessagesFiles['Resources'] = __DIR__ . '/Resources.i18n.php';
 $wgExtensionMessagesFiles['ResourcesAlias'] = __DIR__ . '/Resources.alias.php';
 $wgSpecialPages['Resources'] = 'SpecialResources';
@@ -17,7 +17,7 @@ $wgHooks['SkinTemplateNavigation'][] = 'efResourcesNormalPages';
 $wgHooks['SkinTemplateNavigation::SpecialPage'][] = 'efResourcesSpecialPage';
 
 function getResourceCount($title) {
-    $resourcePage = SpecialPageFactory::getPage('SpecialResources');
+    $resourcePage = SpecialPageFactory::getPage('Resources');
     return $resourcePage->getResourceListCount($title);
 }
 
