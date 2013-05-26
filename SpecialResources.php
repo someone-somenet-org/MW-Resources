@@ -3,7 +3,7 @@
 /**
  * The class implementing Special:Resources (a.k.a. Spezial:Materialien).
  */
-class Resources extends SpecialPage {
+class SpecialResources extends SpecialPage {
 
 	// global variables
 	var $resourcesList;

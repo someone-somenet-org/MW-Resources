@@ -10,7 +10,8 @@ EOT;
 
 $wgAutoloadClasses['Resources'] = __DIR__ . '/SpecialResources.php';
 $wgExtensionMessagesFiles['Resources'] = __DIR__ . '/Resources.i18n.php';
-$wgSpecialPages[ 'Resources' ] = 'Resources';
+$wgExtensionMessagesFiles['ResourcesAlias'] = __DIR__ . '/Resources.alias.php';
+$wgSpecialPages[ 'Resources' ] = 'SpecialResources';
 $wgHooks['LanguageGetSpecialPageAliases'][] = 'efResourcesLocalizedPageName';
 
 $wgHooks['SkinTemplateNavigation'][] = 'efResourcesNormalPages';
