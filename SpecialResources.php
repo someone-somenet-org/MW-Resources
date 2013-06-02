@@ -255,9 +255,8 @@ class SpecialResources extends SpecialPage {
 
         $db_conditions = array(
                 'page_namespace' => $namespace,
-                'page_title ' . $dbr->buildLike($prefixKey),
-                'page_title REGEXP \'^' . $regexpPrefix . '[^/]+$\'',
-                'page_title >= ' . $dbr->addQuotes( $prefixKey ),
+                'page_title ' . $dbr->buildLike($prefixKey, $dbr->anyString()),
+                'page_title >= ' . $dbr->addQuotes($prefixKey),
                 'page_latest=rev_id',
         );
         if ( $wgResourcesSubpagesIncludeRedirects == false )
