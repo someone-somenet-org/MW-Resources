@@ -419,6 +419,7 @@ class SpecialResources extends SpecialPage {
             }
         }
 
+        $result = '';
         if( count( $catPage->articles ) > 0 )
             $result = $catPage->formatList( $catPage->articles, $catPage->articles_start_char );
 
