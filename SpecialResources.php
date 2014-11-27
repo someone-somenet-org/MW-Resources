@@ -159,9 +159,8 @@ class SpecialResources extends SpecialPage {
      *    or int if $count == True
      */
     function getFiles($title, $count = FALSE) {
-        global $wgSkin, $wgContLang, $wgUser, $wgLegalTitleChars,
-            $wgResourcesNamespaces, $wgResourcesDirectFileLinks;
-        $skin = $wgUser->getSkin();
+        global $wgOut, $wgLegalTitleChars, $wgResourcesDirectFileLinks;
+        $skin = $wgOut->getSkin();
         $dbr =& wfGetDB(DB_READ);
 
         /* copied from SpecialUpload::processUpload(): */
@@ -238,8 +237,8 @@ class SpecialResources extends SpecialPage {
      *    or int if $count == True
      */
     function getSubpages($title, $count = FALSE) {
-        global $wgUser, $wgResourcesSubpagesIncludeRedirects;
-        $skin = $wgUser->getSkin();
+        global $wgOut, $wgResourcesSubpagesIncludeRedirects;
+        $skin = $wgOut->getSkin();
         $dbr = wfGetDB(DB_SLAVE);
         $result = array ();
 
