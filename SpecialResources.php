@@ -302,8 +302,8 @@ class SpecialResources extends SpecialPage {
      *    or int if $count == True
      */
     function getLinks($title, $count = False) {
-        global $IP, $wgUser, $wgExternalRedirectProtocols;
-        $skin = $wgUser->getSkin();
+        global $wgOut, $wgExternalRedirectProtocols;
+        $skin = $wgOut->getSkin();
         $result = array();
         $dbr = wfGetDB(DB_SLAVE);
 
@@ -378,8 +378,8 @@ class SpecialResources extends SpecialPage {
      *         by the parser, this is Wiki-Syntax!
      */
     function printHeader() {
-        global $wgUser;
-        $skin = $wgUser->getSkin();
+        global $wgOut;
+        $skin = $wgOut->getSkin();
         $count = count($this->resourceList);
         $titleText = $this->title->getFullText();
         $r = "<div id=\"mw-pages\">\n";
