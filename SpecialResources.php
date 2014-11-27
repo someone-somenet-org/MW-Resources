@@ -28,23 +28,23 @@ class SpecialResources extends SpecialPage {
         /* make a Title object from $par */
         if ($par) {
             $this->title = Title::newFromText($par);
-            $wgOut->setPagetitle(wfMsg('resourcesPageTitle', $this->title->getPrefixedText()));
+            $wgOut->setPagetitle(wfMessage('resourcesPageTitle', $this->title->getPrefixedText())->text());
         } else {
             global $wgResourcesCategory;
             if ($wgResourcesCategory) {
                 $wgOut->addWikiText("<dpl>
                 mode=category
-                resultsheader=" . wfMsg('header_allResources') .
-                "\noneresultheader=" . wfMsg('header_allResourcesOne') .
-                "\nnoresultsheader=" . wfMsg('header_allResourcesNone') .
+                resultsheader=" . wfMessage('header_allResources')->text() .
+                "\noneresultheader=" . wfMessage('header_allResourcesOne')->text() .
+                "\nnoresultsheader=" . wfMessage('header_allResourcesNone')->text() .
                 "\nredirects=include
                 ordermethod=titlewithoutnamespace
                 shownamespace=false
                 category=" . $wgResourcesCategory .
                 "</dpl>");
-                $wgOut->setPagetitle(wfMsg('title_allResources'));
+                $wgOut->setPagetitle(wfMessage('title_allResources')->text());
             } else
-                $wgOut->addWikiText(wfMsg('no_page_specified'));
+                $wgOut->addWikiText(wfMessage('no_page_specified')->text());
             return;
         }
 
@@ -78,8 +78,8 @@ class SpecialResources extends SpecialPage {
             return;
         }
 
-        $wgOut->addWikiText(wfMsg('redirects_header'));
-        $wgOut->addWikiText(wfMsg('redirects_explanation'));
+        $wgOut->addWikiText(wfMessage('redirects_header')->text());
+        $wgOut->addWikiText(wfMessage('redirects_explanation')->text());
 
         while ($row = $dbr->fetchObject($plRes)) {
                                 $rows[$row->page_id] = $row;
@@ -97,9 +97,9 @@ class SpecialResources extends SpecialPage {
             $title = $nt->getText();
             $resourceTitleText = SpecialPage::getTitleFor('Resources');
             if ($row->page_namespace == NS_MAIN) { # this is only to not have a : for the main namespace
-                $list[] = wfMsg('redirect_element_main', $title, $resourceTitleText);
+                $list[] = wfMessage('redirect_element_main', $title, $resourceTitleText)->text();
             } else {
-                $list[] = wfMsg('redirect_element', $namespace, $title, $resourceTitleText);
+                $list[] = wfMessage('redirect_element', $namespace, $title, $resourceTitleText)->text();
             }
 
                 }
@@ -217,10 +217,10 @@ class SpecialResources extends SpecialPage {
 
             $link = Linker::makeMediaLinkFile($targetTitle, $fileArticle, $displayTitle);
             if ($wgResourcesDirectFileLinks) {
-                $detailLink = $skin->link($targetTitle, wfMsg('details'));
-                $comment = '<br />' . wfMsg ('fileCommentWithDetails', $size, $fileArticle->getMimeType(), $detailLink);
+                $detailLink = $skin->link($targetTitle, wfMessage('details')->text());
+                $comment = '<br />' . wfMessage('fileCommentWithDetails', $size, $fileArticle->getMimeType(), $detailLink)->text();
             } else {
-                $comment = '<br />' . wfMsg('fileComment', $size, $fileArticle->getMimeType());
+                $comment = '<br />' . wfMessage('fileComment', $size, $fileArticle->getMimeType())->text();
             }
             $result[ucfirst($sortkey)] = array ($link, $comment);
         }
@@ -280,7 +280,7 @@ class SpecialResources extends SpecialPage {
             $targetTitle = Title::makeTitleSafe($row->page_namespace, $row->page_title);
 
             $link = $skin->link($targetTitle, $targetTitle->getSubpageText());
-            $comment = $this->createPageComment(wfMsg('subpage'),
+            $comment = $this->createPageComment(wfMessage('subpage')->text(),
                 $row->page_len, $row->rev_timestamp);
             $sortkey = $targetTitle->getSubpageText() . '/' .
                 $targetTitle->getBaseText() . ':' . $row->page_id;
@@ -355,7 +355,7 @@ class SpecialResources extends SpecialPage {
             }
             $linkInfo .= ' (' . $skin->link(
                 $targetTitle,
-                wfMsg('redirect_link_view'),
+                wfMessage('redirect_link_view')->text(),
                 array(),
                 array('redirect' => 'no')
             ) . ')';
@@ -385,11 +385,11 @@ class SpecialResources extends SpecialPage {
         $r = "<div id=\"mw-pages\">\n";
         $addResourceText = SpecialPage::getTitleFor('AddResource');
         if ($count > 1) {
-            $r .= wfMsg('header_text', $count, $addResourceText, $titleText);
+            $r .= wfMessage('header_text', $count, $addResourceText, $titleText)->text();
         } elseif ($count == 1) {
-            $r .= wfMsg('header_text_one', $count, $addResourceText, $titleText);
+            $r .= wfMessage('header_text_one', $count, $addResourceText, $titleText)->text();
         } else {
-            $r .= wfMsg('header_text_none', $titleText, $addResourceText);
+            $r .= wfMessage('header_text_none', $titleText, $addResourceText)->text();
         }
         $r .= "</div>";
         return $r;
@@ -441,7 +441,7 @@ class SpecialResources extends SpecialPage {
     /**
      * create a comment to the given (sub)page. This is mainly used to
      * parse the timestamp.
-     * @param info the namespace for pages, wfMsg('subpage') for subpages
+     * @param info the namespace for pages, wfMessage('subpage')->text() for subpages
      * @param length the length of the page
      * @param timestamp the timestamp as found in the MW-database
      *         ('YYYYmmddHHMMSS')
@@ -458,7 +458,7 @@ class SpecialResources extends SpecialPage {
             $time['tm_year'] + 1900);
         $lastChange = date('Y-m-d H:i', $timestamp);
 
-        return '<br />' . wfMsg('pageComment', $info, $length, $lastChange) ;
+        return '<br />' . wfMessage('pageComment', $info, $length, $lastChange)->text() ;
     }
 
     /**
