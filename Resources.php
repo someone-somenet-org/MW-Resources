@@ -23,9 +23,9 @@ function getResourceCount($title) {
 
 function getResourceTabText($resourceCount) {
     if ($resourceCount > 0) {
-        return wfMsg('resourcesTabExists', $resourceCount);
+        return wfMessage('resourcesTabExists', $resourceCount)->text();
     } else {
-        return wfMsg('resourcesTab');
+        return wfMessage('resourcesTab')->text();
     }
 }
 
