@@ -159,8 +159,7 @@ class SpecialResources extends SpecialPage {
      *    or int if $count == True
      */
     function getFiles($title, $count = FALSE) {
-        global $wgOut, $wgLegalTitleChars, $wgResourcesDirectFileLinks;
-        $skin = $wgOut->getSkin();
+        global $wgLegalTitleChars, $wgResourcesDirectFileLinks;
         $dbr =& wfGetDB(DB_READ);
 
         /* copied from SpecialUpload::processUpload(): */
@@ -217,7 +216,7 @@ class SpecialResources extends SpecialPage {
 
             $link = Linker::makeMediaLinkFile($targetTitle, $fileArticle, $displayTitle);
             if ($wgResourcesDirectFileLinks) {
-                $detailLink = $skin->link($targetTitle, wfMessage('details')->text());
+                $detailLink = Linker::link($targetTitle, wfMessage('details')->text());
                 $comment = '<br />' . wfMessage('fileCommentWithDetails', $size, $fileArticle->getMimeType(), $detailLink)->text();
             } else {
                 $comment = '<br />' . wfMessage('fileComment', $size, $fileArticle->getMimeType())->text();
@@ -237,8 +236,7 @@ class SpecialResources extends SpecialPage {
      *    or int if $count == True
      */
     function getSubpages($title, $count = FALSE) {
-        global $wgOut, $wgResourcesSubpagesIncludeRedirects;
-        $skin = $wgOut->getSkin();
+        global $wgResourcesSubpagesIncludeRedirects;
         $dbr = wfGetDB(DB_SLAVE);
         $result = array ();
 
@@ -279,7 +277,7 @@ class SpecialResources extends SpecialPage {
         while ($row = $dbr->fetchObject($res)) {
             $targetTitle = Title::makeTitleSafe($row->page_namespace, $row->page_title);
 
-            $link = $skin->link($targetTitle, $targetTitle->getSubpageText());
+            $link = Linker::link($targetTitle, $targetTitle->getSubpageText());
             $comment = $this->createPageComment(wfMessage('subpage')->text(),
                 $row->page_len, $row->rev_timestamp);
             $sortkey = $targetTitle->getSubpageText() . '/' .
@@ -302,8 +300,7 @@ class SpecialResources extends SpecialPage {
      *    or int if $count == True
      */
     function getLinks($title, $count = False) {
-        global $wgOut, $wgExternalRedirectProtocols;
-        $skin = $wgOut->getSkin();
+        global $wgExternalRedirectProtocols;
         $result = array();
         $dbr = wfGetDB(DB_SLAVE);
 
@@ -347,13 +344,13 @@ class SpecialResources extends SpecialPage {
             $targetTitle = Title::makeTitleSafe($row->page_namespace, $row->page_title);
             $targetInfo = Sanitizer::removeHTMLtags($targetInfo); //remove dangerous HTML tags
 
-            $link = $skin->makeExternalLink(
-                    $target, $targetTitle->getSubpageText());
+            $link = Linker::makeExternalLink(
+                $target, $targetTitle->getSubpageText());
             $linkInfo = '';
             if ($targetInfo) {
                 $linkInfo .= '<br />' . $targetInfo;
             }
-            $linkInfo .= ' (' . $skin->link(
+            $linkInfo .= ' (' . Linker::link(
                 $targetTitle,
                 wfMessage('redirect_link_view')->text(),
                 array(),
@@ -378,8 +375,6 @@ class SpecialResources extends SpecialPage {
      *         by the parser, this is Wiki-Syntax!
      */
     function printHeader() {
-        global $wgOut;
-        $skin = $wgOut->getSkin();
         $count = count($this->resourceList);
         $titleText = $this->title->getFullText();
         $r = "<div id=\"mw-pages\">\n";
