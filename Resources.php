@@ -3,9 +3,9 @@
 if (!defined('MEDIAWIKI')) {
     echo <<<EOT
 To install my extension, put the following line in LocalSettings.php:
-require_once( "$IP/extensions/Resources/Resources.php" );
+require_once("$IP/extensions/Resources/Resources.php");
 EOT;
-    exit( 1 );
+    exit(1);
 }
 
 $wgAutoloadClasses['SpecialResources'] = __DIR__ . '/SpecialResources.php';
@@ -37,7 +37,7 @@ function getAddResourceUrl($title) {
 /**
  * this function is not currently used and is only here for future reference
  */
-function efResourcesSpecialPage( $template, $links ) {
+function efResourcesSpecialPage($template, $links) {
     global $wgTitle, $wgRequest, $wgUser, $wgAddResourceTab;
 
     // return if we are not on the right special page
@@ -51,8 +51,8 @@ function efResourcesSpecialPage( $template, $links ) {
     if (strpos($prefixedText, '/') === FALSE) {
         return true; // no page given
     }
-    $parts = explode( '/', $prefixedText);
-    $pageName = $parts[count( $parts ) - 1];
+    $parts = explode('/', $prefixedText);
+    $pageName = $parts[count($parts) - 1];
 
     $title = Title::newFromText($pageName)->getSubjectPage();
     $talkTitle = $title->getTalkPage();
@@ -98,14 +98,14 @@ function efResourcesSpecialPage( $template, $links ) {
  * not handle special pages, for which unfortunatly no hook is called (also see
  * the above function).
  */
-function efResourcesNormalPages( $template, $links ) {
+function efResourcesNormalPages($template, $links) {
     global $wgResourcesNamespaces, $wgResourcesTabs, $wgTitle;
-    if ( ! $wgResourcesTabs )
+    if (!$wgResourcesTabs)
         return true;
     $title = $wgTitle->getSubjectPage();
     $ns = $title->getNamespace();
 
-    if (! in_array( $ns, $wgResourcesNamespaces )) {
+    if (! in_array($ns, $wgResourcesNamespaces)) {
         return true; /* admin doesn't want tab here */
     }
 
@@ -114,14 +114,14 @@ function efResourcesNormalPages( $template, $links ) {
     $class = $resourceCount > 0 ? 'is_resources' : 'new is_resources';
 
     # get link target:
-    $resources = SpecialPage::getTitleFor( 'Resources' );
+    $resources = SpecialPage::getTitleFor('Resources');
     $target = $resources->getLocalURL() .'/'. $title->getPrefixedDBkey();
 
     # resource tab text:
     $text = getResourceTabText($resourceCount);
 
     $namespaces = $links['namespaces'];
-    $namespace_key = array_keys( $namespaces );
+    $namespace_key = array_keys($namespaces);
 
     // Get AddResources URL:
     $addResourceUrl = getAddResourceUrl($title);
@@ -140,9 +140,9 @@ function efResourcesNormalPages( $template, $links ) {
     );
 
     # build array:
-    $head = array_slice( $namespaces, 0, 1 );
-    $tail = array_slice( $namespaces, 1 );
-    $links['namespaces'] = array_merge( $head, $resourcesTab, $tail );
+    $head = array_slice($namespaces, 0, 1);
+    $tail = array_slice($namespaces, 1);
+    $links['namespaces'] = array_merge($head, $resourcesTab, $tail);
 
     return true;
 }
