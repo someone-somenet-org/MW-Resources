@@ -98,10 +98,11 @@ function efResourcesSpecialPage($template, $links) {
  * not handle special pages, for which unfortunatly no hook is called (also see
  * the above function).
  */
-function efResourcesNormalPages($template, $links) {
+function efResourcesNormalPages(SkinTemplate &$sktemplate, array &$links) {
     global $wgResourcesNamespaces, $wgResourcesTabs, $wgTitle;
-    if (!$wgResourcesTabs)
+    if (!$wgResourcesTabs) {
         return true;
+    }
     $title = $wgTitle->getSubjectPage();
     $ns = $title->getNamespace();
 
