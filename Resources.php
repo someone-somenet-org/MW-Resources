@@ -37,7 +37,7 @@ function getAddResourceUrl($title) {
 /**
  * this function is not currently used and is only here for future reference
  */
-function efResourcesSpecialPage($template, $links) {
+function efResourcesSpecialPage(SkinTemplate &$sktemplate, array &$links) {
     global $wgTitle, $wgRequest, $wgUser, $wgAddResourceTab;
 
     // return if we are not on the right special page
