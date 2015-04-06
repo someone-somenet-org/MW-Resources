@@ -35,7 +35,7 @@ function getAddResourceUrl($title) {
 }
 
 /**
- * this function is not currently used and is only here for future reference
+ * Add Resource Tab on special pages on SkinTemplates (like Vector).
  */
 function efResourcesSpecialPage(SkinTemplate &$sktemplate, array &$links) {
     global $wgTitle, $wgRequest, $wgUser, $wgAddResourceTab;
@@ -94,9 +94,7 @@ function efResourcesSpecialPage(SkinTemplate &$sktemplate, array &$links) {
 }
 
 /**
- * Add Resource Tab on normal pages on SkinTemplates (like Vector). This does
- * not handle special pages, for which unfortunatly no hook is called (also see
- * the above function).
+ * Add Resource Tab on normal pages on SkinTemplates (like Vector).
  */
 function efResourcesNormalPages(SkinTemplate &$sktemplate, array &$links) {
     global $wgResourcesNamespaces, $wgResourcesTabs, $wgTitle;
