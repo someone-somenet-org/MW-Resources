@@ -41,7 +41,7 @@ function efResourcesSpecialPage($template, $links) {
     global $wgTitle, $wgRequest, $wgUser, $wgAddResourceTab;
 
     // return if we are not on the right special page
-    if (!$wgTitle->isSpecial('Resources')) {
+    if (! ($wgTitle->isSpecial('Resources') || $wgTitle->isSpecial('AddResource'))) {
         return true;
     }
 
