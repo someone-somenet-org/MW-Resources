@@ -54,7 +54,7 @@ function efResourcesSpecialPage(SkinTemplate &$sktemplate, array &$links) {
     }
     $pageName = substr($prefixedText, $slashpos + 1);
 
-    $title = Title::newFromText($pageName)->getSubjectPage();
+    $title = Title::newFromDBkey($pageName)->getSubjectPage();
     $talkTitle = $title->getTalkPage();
 
     # Get AddResource URL:
