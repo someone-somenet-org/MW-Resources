@@ -48,11 +48,11 @@ function efResourcesSpecialPage(SkinTemplate &$sktemplate, array &$links) {
     // parse subpage-part. We cannot use $wgTitle->getSubpage() because the
     // special namespaces doesn't have real subpages
     $prefixedText = $wgTitle->getPrefixedText();
-    if (strpos($prefixedText, '/') === FALSE) {
+    $slashpos = strpos($prefixedText, '/');
+    if ($slashpos === FALSE) {
         return true; // no page given
     }
-    $parts = explode('/', $prefixedText);
-    $pageName = $parts[count($parts) - 1];
+    $pageName = substr($prefixedText, $slashpos + 1);
 
     $title = Title::newFromText($pageName)->getSubjectPage();
     $talkTitle = $title->getTalkPage();
