@@ -40,13 +40,13 @@ function getAddResourceUrl($title) {
 function efResourcesSpecialPage(SkinTemplate &$sktemplate, array &$links) {
     global $wgTitle, $wgRequest, $wgUser, $wgAddResourceTab;
 
-    // return if we are not on the right special page
+    # return if we are not on the right special page
     if (! ($wgTitle->isSpecial('Resources') || $wgTitle->isSpecial('AddResource'))) {
         return true;
     }
 
-    // parse subpage-part. We cannot use $wgTitle->getSubpage() because the
-    // special namespaces doesn't have real subpages
+    # parse subpage-part. We cannot use $wgTitle->getSubpage() because the
+    # special namespaces doesn't have real subpages
     $prefixedText = $wgTitle->getPrefixedText();
     $slashpos = strpos($prefixedText, '/');
     if ($slashpos === FALSE) {
@@ -57,7 +57,7 @@ function efResourcesSpecialPage(SkinTemplate &$sktemplate, array &$links) {
     $title = Title::newFromText($pageName)->getSubjectPage();
     $talkTitle = $title->getTalkPage();
 
-    // Get AddResource URL:
+    # Get AddResource URL:
     $addResourceUrl = getAddResourceUrl($title);
 
     $head = array (
@@ -122,7 +122,7 @@ function efResourcesNormalPages(SkinTemplate &$sktemplate, array &$links) {
     $namespaces = $links['namespaces'];
     $namespace_key = array_keys($namespaces);
 
-    // Get AddResources URL:
+    # Get AddResources URL:
     $addResourceUrl = getAddResourceUrl($title);
 
     $resourcesTab = array(
