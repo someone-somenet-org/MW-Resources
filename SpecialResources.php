@@ -103,7 +103,7 @@ class SpecialResources extends SpecialPage {
             }
 
                 }
-        $wgOut->addWikiText(implode($list, "\n"));
+        $wgOut->addWikiText(implode("\n", $list));
     }
 
     /**
@@ -126,7 +126,7 @@ class SpecialResources extends SpecialPage {
         /* add a list of foreign links (requires ExternalRedirects extension) */
         if ($wgEnableExternalRedirects and
             ($wgResourcesShowLinks !== FALSE))
-            $resourceList = array_merge($resourceList, $this->getLinks($title));
+	    $resourceList = array_merge($resourceList, $this->getLinks($title));
         return $resourceList;
     }
 
@@ -160,7 +160,8 @@ class SpecialResources extends SpecialPage {
      */
     function getFiles($title, $count = FALSE) {
         global $wgLegalTitleChars, $wgResourcesDirectFileLinks;
-        $dbr =& wfGetDB(DB_READ);
+        #$dbr =& wfGetDB();
+        $dbr = wfGetDB(DB_SLAVE);
 
         /* copied from SpecialUpload::processUpload(): */
                 $prefix = preg_replace ("/[^" . $wgLegalTitleChars . "]|:|\//", '-',
